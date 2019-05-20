@@ -1,6 +1,6 @@
 package com.gfd.cropwis.viewmodels;
 
-import android.arch.lifecycle.ViewModel;
+import androidx.lifecycle.ViewModel;
 import android.content.SharedPreferences;
 
 import com.gfd.cropwis.Constants;

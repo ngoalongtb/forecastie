@@ -24,6 +24,7 @@
         android:orientation="vertical">
         <ImageView
             android:background="@drawable/bg_uganda"
+            android:contentDescription="@string/image"
             android:layout_width="match_parent"
             android:layout_height="wrap_content" />
     </ScrollView>

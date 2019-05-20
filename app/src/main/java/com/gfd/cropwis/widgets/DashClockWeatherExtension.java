@@ -20,7 +20,7 @@ import com.gfd.cropwis.activities.SplashActivity;
 import com.gfd.cropwis.utils.UnitConvertor;
 
 public class DashClockWeatherExtension extends DashClockExtension {
-    private static final Uri URI_BASE = Uri.parse("content://cz.martykan.forecastie.authority");
+    private static final Uri URI_BASE = Uri.parse("content://com.gfd.cropwis.authority");
     private static final String UPDATE_URI_PATH_SEGMENT = "dashclock/update";
 
     @Override

@@ -1,11 +1,11 @@
 package com.gfd.cropwis.activities;
 
 import android.annotation.SuppressLint;
-import android.arch.lifecycle.ViewModelProviders;
+import androidx.lifecycle.ViewModelProviders;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.support.annotation.IdRes;
+import androidx.annotation.IdRes;
 import android.util.Log;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebView;
