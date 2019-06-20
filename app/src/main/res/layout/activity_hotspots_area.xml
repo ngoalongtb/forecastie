@@ -11,22 +11,23 @@
         android:layout_width="match_parent"
         android:layout_height="50dp">
         <TextView
+            android:id="@+id/tvDate"
             android:textSize="22sp"
             android:textColor="@color/white"
-            android:text="[ Jan, 2018 ]"
+            android:text="@string/date_hint"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content" />
     </LinearLayout>
     <ScrollView
-        android:id="@+id/llHotspotList"
+        android:id="@+id/svHotspotList"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical">
-        <ImageView
-            android:background="@drawable/bg_uganda"
-            android:contentDescription="@string/image"
+        <LinearLayout
+            android:id="@+id/llHotspotList"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content"
+            android:orientation="vertical" />
     </ScrollView>
 
 </LinearLayout>

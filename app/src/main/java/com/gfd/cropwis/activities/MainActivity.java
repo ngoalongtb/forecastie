@@ -70,7 +70,7 @@ import com.gfd.cropwis.utils.UnitConvertor;
 import com.gfd.cropwis.widgets.AbstractWidgetProvider;
 import com.gfd.cropwis.widgets.DashClockWeatherExtension;
 
-public class MainActivity extends BaseActivity implements LocationListener, NavigationDrawerFragment.OnFragmentInteractionListener {
+public class MainActivity extends BaseActivity implements LocationListener {
     protected static final int MY_PERMISSIONS_ACCESS_FINE_LOCATION = 1;
 
     // Time in milliseconds; only reload weather if last update is longer ago than this value
@@ -305,7 +305,7 @@ public class MainActivity extends BaseActivity implements LocationListener, Navi
         input.setInputType(InputType.TYPE_CLASS_TEXT);
         input.setMaxLines(1);
         input.setSingleLine(true);
-        alert.setView(input, 32, 0, 32, 0);
+        //alert.setView(input, 32, 0, 32, 0);
 
         alert.setPositiveButton(R.string.dialog_ok, new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int whichButton) {
@@ -869,11 +869,6 @@ public class MainActivity extends BaseActivity implements LocationListener, Navi
 
     @Override
     public void onProviderDisabled(String provider) {
-
-    }
-
-    @Override
-    public void onFragmentInteraction(Uri uri) {
 
     }
 

@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">मौसम</string>
+    <string name="app_name">CropWIS</string>
 
     <string name="action_search">खोज</string>
     <string name="action_refresh">ताजा</string>

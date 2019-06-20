@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="horizontal"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:padding="10dp">
+    <LinearLayout
+        android:layout_weight="1"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content">
+        <TextView
+            android:id="@+id/tvHotspotName3"
+            android:text="@string/hotspot_name3_hint"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+    </LinearLayout>
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:paddingStart="30dp"
+        android:paddingEnd="30dp">
+        <TextView
+            android:id="@+id/tvHotspotValue"
+            android:text="@string/hotspot_value_hint"
+            android:textColor="@color/material_red_500"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingEnd="5dp"/>
+        <ImageView
+            android:contentDescription="@string/image"
+            android:src="@drawable/ic_tint_slash_solid"
+            android:layout_width="30dp"
+            android:layout_height="wrap_content" />
+    </LinearLayout>
+</LinearLayout>
