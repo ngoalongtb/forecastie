@@ -7,7 +7,7 @@
     <item>
         <bitmap
             android:gravity="center"
-            android:src="@drawable/ic_cloud_white_48dp"/>
+            android:src="@drawable/maiza96"/>
     </item>
 
 </layer-list>

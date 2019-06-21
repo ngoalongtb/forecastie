@@ -6,4 +6,6 @@ public class Constants {
     public static final String  DEFAULT_LON = "0.1275";
     public static final String DEFAULT_CITY_ID = "2643743";
     public static final int DEFAULT_ZOOM_LEVEL = 7;
+
+    public static final String HOTSPOT_API = "http://cropinformationsystem.net/ug/service/hotspot?year=%d&week=%d";
 }

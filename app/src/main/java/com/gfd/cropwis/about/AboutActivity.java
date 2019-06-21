@@ -18,6 +18,7 @@ public class AboutActivity extends BaseActivity {
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.about_act);
+
         setupToolbar();
 
         setupDrawer();

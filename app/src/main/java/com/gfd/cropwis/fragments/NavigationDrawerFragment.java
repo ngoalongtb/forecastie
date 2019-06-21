@@ -1,8 +1,6 @@
 package com.gfd.cropwis.fragments;
 
-import android.content.Context;
 import android.content.Intent;
-import android.net.Uri;
 import android.os.Bundle;
 import androidx.fragment.app.Fragment;
 import androidx.drawerlayout.widget.DrawerLayout;
@@ -15,7 +13,7 @@ import android.widget.LinearLayout;
 
 import com.gfd.cropwis.R;
 import com.gfd.cropwis.about.AboutActivity;
-import com.gfd.cropwis.activities.HotspotsAreaActivity;
+import com.gfd.cropwis.hotspotsarea.HotspotsAreaActivity;
 import com.gfd.cropwis.activities.MainActivity;
 import com.gfd.cropwis.activities.SettingsActivity;
 

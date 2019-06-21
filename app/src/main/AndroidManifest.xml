@@ -17,7 +17,7 @@
         <activity android:name=".about.AboutActivity"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
-            android:name=".activities.HotspotsAreaActivity"
+            android:name=".hotspotsarea.HotspotsAreaActivity"
             android:theme="@style/AppTheme" />
         <activity
             android:name=".activities.SplashActivity"

@@ -156,4 +156,10 @@
     <string name="date_hint">[ Jan, 2018 ]</string>
     <string name="about_1">\t\t\t\tCropWIS is a cross platform geo-web and mobile phone application with current location based functionality/ geographical position system (GPS) for broadcasting daily weather and crop early warning predictions and alerts to farm communities and policymakers using the latest state of the art ICT platform for hosting and delivering digital data. The project is supported by USAID through the US-NFS and implemented by Makerere University and University of Zambia.</string>
     <string name="about_preferences">About</string>
+    <string name="ok">OK</string>
+    <string name="cancel">Cancel</string>
+    <string name="clear">Clear</string>
+    <string name="sending_request">Sending request</string>
+    <string name="wait_please">Wait please</string>
+    <string name="an_error_occurred">An error occurred</string>
 </resources>
