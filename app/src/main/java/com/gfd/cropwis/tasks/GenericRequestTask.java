@@ -26,9 +26,9 @@ import com.gfd.cropwis.activities.MainActivity;
 
 public abstract class GenericRequestTask extends AsyncTask<String, String, TaskOutput> {
 
-    ProgressDialog progressDialog;
-    Context context;
-    MainActivity activity;
+    private ProgressDialog progressDialog;
+    private Context context;
+    private MainActivity activity;
     public int loading = 0;
 
     public GenericRequestTask(Context context, MainActivity activity, ProgressDialog progressDialog) {
@@ -74,16 +74,16 @@ public abstract class GenericRequestTask extends AsyncTask<String, String, TaskO
                 URL url = provideURL(reqParams);
                 Log.i("URL", url.toString());
                 HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
-                if (urlConnection.getResponseCode() == 200) {
-                    InputStreamReader inputStreamReader = new InputStreamReader(urlConnection.getInputStream());
-                    BufferedReader r = new BufferedReader(inputStreamReader);
+                    if (urlConnection.getResponseCode() == 200) {
+                        InputStreamReader inputStreamReader = new InputStreamReader(urlConnection.getInputStream());
+                        BufferedReader r = new BufferedReader(inputStreamReader);
 
-                    int responseCode = urlConnection.getResponseCode();
-                    String line = null;
-                    while ((line = r.readLine()) != null) {
-                        response += line + "\n";
-                    }
-                    close(r);
+                        int responseCode = urlConnection.getResponseCode();
+                        String line = null;
+                        while ((line = r.readLine()) != null) {
+                            response += line + "\n";
+                        }
+                        close(r);
                     urlConnection.disconnect();
                     // Background work finished successfully
                     Log.i("Task", "done successfully");
@@ -167,27 +167,32 @@ public abstract class GenericRequestTask extends AsyncTask<String, String, TaskO
     }
 
     private URL provideURL(String[] reqParams) throws UnsupportedEncodingException, MalformedURLException {
-        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(context);
-        String apiKey = sp.getString("apiKey", activity.getResources().getString(R.string.apiKey));
-
-        StringBuilder urlBuilder = new StringBuilder("https://api.openweathermap.org/data/2.5/");
-        urlBuilder.append(getAPIName()).append("?");
-        if (reqParams.length > 0) {
-            final String zeroParam = reqParams[0];
-            if ("coords".equals(zeroParam)) {
-                urlBuilder.append("lat=").append(reqParams[1]).append("&lon=").append(reqParams[2]);
-            } else if ("city".equals(zeroParam)) {
-                urlBuilder.append("q=").append(reqParams[1]);
-            }
+        String apiName = getAPIName();
+        if (apiName.equals(Constants.FORECAST_16_DAYS_KEY)) {
+            return new URL(String.format(Constants.FORECAST_16_DAYS, reqParams[1], reqParams[2]));
         } else {
-            final String cityId = sp.getString("cityId", Constants.DEFAULT_CITY_ID);
-            urlBuilder.append("id=").append(URLEncoder.encode(cityId, "UTF-8"));
-        }
-        urlBuilder.append("&lang=").append(getLanguage());
-        urlBuilder.append("&mode=json");
-        urlBuilder.append("&appid=").append(apiKey);
+            SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(context);
+            String apiKey = sp.getString("apiKey", activity.getResources().getString(R.string.apiKey));
 
-        return new URL(urlBuilder.toString());
+            StringBuilder urlBuilder = new StringBuilder("https://api.openweathermap.org/data/2.5/");
+            urlBuilder.append(getAPIName()).append("?");
+            if (reqParams.length > 0) {
+                final String zeroParam = reqParams[0];
+                if ("coords".equals(zeroParam)) {
+                    urlBuilder.append("lat=").append(reqParams[1]).append("&lon=").append(reqParams[2]);
+                } else if ("city".equals(zeroParam)) {
+                    urlBuilder.append("q=").append(reqParams[1]);
+                }
+            } else {
+                final String cityId = sp.getString("cityId", Constants.DEFAULT_CITY_ID);
+                urlBuilder.append("id=").append(URLEncoder.encode(cityId, "UTF-8"));
+            }
+            urlBuilder.append("&lang=").append(getLanguage());
+            urlBuilder.append("&mode=json");
+            urlBuilder.append("&appid=").append(apiKey);
+
+            return new URL(urlBuilder.toString());
+        }
     }
 
     private void restorePreviousCity() {

@@ -122,7 +122,7 @@
 
     <!-- 1: temperature; 2: unit -->
     <string name="dash_clock_status">%1$s%2$s</string>
-    <!-- 1: temperature; 2: unit; 3: weather description -->
+    <!-- 1: temperature; 2: unit; 3: weather5Day description -->
     <string name="dash_clock_expanded_title">%1$s%2$s - %3$s</string>
     <!-- 1: city; 2: country; 3: wind; 4: speed units; 5: pressure; 6: pressure units; 7: humidity -->
     <string name="dash_clock_expanded_body">%1$s, %2$s\nWind: %3$s %4$s\nPressure: %5$s %6$s\nHumidity: %7$s %%\n</string>
@@ -154,7 +154,7 @@
     <string name="hotspot_value_hint">-49</string>
     <string name="hotspot_name3_hint">Rukungiri Tc</string>
     <string name="date_hint">[ Jan, 2018 ]</string>
-    <string name="about_1">\t\t\t\tCropWIS is a cross platform geo-web and mobile phone application with current location based functionality/ geographical position system (GPS) for broadcasting daily weather and crop early warning predictions and alerts to farm communities and policymakers using the latest state of the art ICT platform for hosting and delivering digital data. The project is supported by USAID through the US-NFS and implemented by Makerere University and University of Zambia.</string>
+    <string name="about_1">\t\t\t\tCropWIS is a cross platform geo-web and mobile phone application with current location based functionality/ geographical position system (GPS) for broadcasting daily weather5Day and crop early warning predictions and alerts to farm communities and policymakers using the latest state of the art ICT platform for hosting and delivering digital data. The project is supported by USAID through the US-NFS and implemented by Makerere University and University of Zambia.</string>
     <string name="about_preferences">About</string>
     <string name="ok">OK</string>
     <string name="cancel">Cancel</string>
@@ -162,4 +162,5 @@
     <string name="sending_request">Sending request</string>
     <string name="wait_please">Wait please</string>
     <string name="an_error_occurred">An error occurred</string>
+    <string name="no_selected">[No Selected]</string>
 </resources>

@@ -29,7 +29,7 @@ import java.util.concurrent.TimeUnit;
 import com.gfd.cropwis.BuildConfig;
 import com.gfd.cropwis.activities.MainActivity;
 import com.gfd.cropwis.R;
-import com.gfd.cropwis.models.Weather;
+import com.gfd.cropwis.models.Weather5Day;
 import com.gfd.cropwis.utils.UnitConvertor;
 
 public abstract class AbstractWidgetProvider extends AppWidgetProvider {
@@ -106,7 +106,7 @@ public abstract class AbstractWidgetProvider extends AppWidgetProvider {
         return icon;
     }
 
-    protected Weather parseWidgetJson(String result, Context context) {
+    protected Weather5Day parseWidgetJson(String result, Context context) {
         try {
             MainActivity.initMappings();
 
@@ -144,25 +144,25 @@ public abstract class AbstractWidgetProvider extends AppWidgetProvider {
             String description = reader.optJSONArray("weather").getJSONObject(0).getString("description");
             description = description.substring(0,1).toUpperCase() + description.substring(1);
 
-            Weather widgetWeather = new Weather();
-            widgetWeather.setCity(reader.getString("name"));
-            widgetWeather.setCountry(reader.optJSONObject("sys").getString("country"));
-            widgetWeather.setTemperature(Math.round(temperature) + localize(sp, context, "unit", "C"));
-            widgetWeather.setDescription(description);
-            widgetWeather.setWind(context.getString(R.string.wind) + ": " + new DecimalFormat("0.0").format(wind) + " " + localize(sp, context, "speedUnit", "m/s")
-                    + (widgetWeather.isWindDirectionAvailable() ? " " + MainActivity.getWindDirectionString(sp, context, widgetWeather) : ""));
-            widgetWeather.setPressure(context.getString(R.string.pressure) + ": " + new DecimalFormat("0.0").format(pressure) + " " + localize(sp, context, "pressureUnit", "hPa"));
-            widgetWeather.setHumidity(reader.optJSONObject("main").getString("humidity"));
-            widgetWeather.setSunrise(reader.optJSONObject("sys").getString("sunrise"));
-            widgetWeather.setSunset(reader.optJSONObject("sys").getString("sunset"));
-            widgetWeather.setIcon(setWeatherIcon(Integer.parseInt(reader.optJSONArray("weather").getJSONObject(0).getString("id")), Calendar.getInstance().get(Calendar.HOUR_OF_DAY), context));
-            widgetWeather.setLastUpdated(lastUpdate);
+            Weather5Day widgetWeather5Day = new Weather5Day();
+            widgetWeather5Day.setCity(reader.getString("name"));
+            widgetWeather5Day.setCountry(reader.optJSONObject("sys").getString("country"));
+            widgetWeather5Day.setTemperature(Math.round(temperature) + localize(sp, context, "unit", "C"));
+            widgetWeather5Day.setDescription(description);
+            widgetWeather5Day.setWind(context.getString(R.string.wind) + ": " + new DecimalFormat("0.0").format(wind) + " " + localize(sp, context, "speedUnit", "m/s")
+                    + (widgetWeather5Day.isWindDirectionAvailable() ? " " + MainActivity.getWindDirectionString(sp, context, widgetWeather5Day) : ""));
+            widgetWeather5Day.setPressure(context.getString(R.string.pressure) + ": " + new DecimalFormat("0.0").format(pressure) + " " + localize(sp, context, "pressureUnit", "hPa"));
+            widgetWeather5Day.setHumidity(reader.optJSONObject("main").getString("humidity"));
+            widgetWeather5Day.setSunrise(reader.optJSONObject("sys").getString("sunrise"));
+            widgetWeather5Day.setSunset(reader.optJSONObject("sys").getString("sunset"));
+            widgetWeather5Day.setIcon(setWeatherIcon(Integer.parseInt(reader.optJSONArray("weather").getJSONObject(0).getString("id")), Calendar.getInstance().get(Calendar.HOUR_OF_DAY), context));
+            widgetWeather5Day.setLastUpdated(lastUpdate);
 
-            return widgetWeather;
+            return widgetWeather5Day;
         } catch (JSONException e) {
             Log.e("JSONException Data", result);
             e.printStackTrace();
-            return new Weather();
+            return new Weather5Day();
         }
     }
 

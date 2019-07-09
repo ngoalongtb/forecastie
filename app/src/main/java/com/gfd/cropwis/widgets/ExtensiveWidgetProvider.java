@@ -13,7 +13,7 @@ import java.text.DateFormat;
 import com.gfd.cropwis.AlarmReceiver;
 import com.gfd.cropwis.activities.MainActivity;
 import com.gfd.cropwis.R;
-import com.gfd.cropwis.models.Weather;
+import com.gfd.cropwis.models.Weather5Day;
 
 public class ExtensiveWidgetProvider extends AbstractWidgetProvider {
 
@@ -35,9 +35,9 @@ public class ExtensiveWidgetProvider extends AbstractWidgetProvider {
             remoteViews.setOnClickPendingIntent(R.id.widgetRoot, pendingIntent2);
 
             SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(context);
-            Weather widgetWeather = new Weather();
+            Weather5Day widgetWeather5Day = new Weather5Day();
             if(!sp.getString("lastToday", "").equals("")) {
-                widgetWeather = parseWidgetJson(sp.getString("lastToday", ""), context);
+                widgetWeather5Day = parseWidgetJson(sp.getString("lastToday", ""), context);
             }
             else {
                 try {
@@ -50,16 +50,16 @@ public class ExtensiveWidgetProvider extends AbstractWidgetProvider {
 
             DateFormat timeFormat = android.text.format.DateFormat.getTimeFormat(context);
 
-            remoteViews.setTextViewText(R.id.widgetCity, widgetWeather.getCity() + ", " + widgetWeather.getCountry());
-            remoteViews.setTextViewText(R.id.widgetTemperature, widgetWeather.getTemperature());
-            remoteViews.setTextViewText(R.id.widgetDescription, widgetWeather.getDescription());
-            remoteViews.setTextViewText(R.id.widgetWind, widgetWeather.getWind());
-            remoteViews.setTextViewText(R.id.widgetPressure, widgetWeather.getPressure());
-            remoteViews.setTextViewText(R.id.widgetHumidity, context.getString(R.string.humidity) + ": " + widgetWeather.getHumidity() + " %");
-            remoteViews.setTextViewText(R.id.widgetSunrise, context.getString(R.string.sunrise) + ": " + timeFormat.format(widgetWeather.getSunrise())); //
-            remoteViews.setTextViewText(R.id.widgetSunset, context.getString(R.string.sunset) + ": " + timeFormat.format(widgetWeather.getSunset()));
-            remoteViews.setTextViewText(R.id.widgetLastUpdate, widgetWeather.getLastUpdated());
-            remoteViews.setImageViewBitmap(R.id.widgetIcon, getWeatherIcon(widgetWeather.getIcon(), context));
+            remoteViews.setTextViewText(R.id.widgetCity, widgetWeather5Day.getCity() + ", " + widgetWeather5Day.getCountry());
+            remoteViews.setTextViewText(R.id.widgetTemperature, widgetWeather5Day.getTemperature());
+            remoteViews.setTextViewText(R.id.widgetDescription, widgetWeather5Day.getDescription());
+            remoteViews.setTextViewText(R.id.widgetWind, widgetWeather5Day.getWind());
+            remoteViews.setTextViewText(R.id.widgetPressure, widgetWeather5Day.getPressure());
+            remoteViews.setTextViewText(R.id.widgetHumidity, context.getString(R.string.humidity) + ": " + widgetWeather5Day.getHumidity() + " %");
+            remoteViews.setTextViewText(R.id.widgetSunrise, context.getString(R.string.sunrise) + ": " + timeFormat.format(widgetWeather5Day.getSunrise())); //
+            remoteViews.setTextViewText(R.id.widgetSunset, context.getString(R.string.sunset) + ": " + timeFormat.format(widgetWeather5Day.getSunset()));
+            remoteViews.setTextViewText(R.id.widgetLastUpdate, widgetWeather5Day.getLastUpdated());
+            remoteViews.setImageViewBitmap(R.id.widgetIcon, getWeatherIcon(widgetWeather5Day.getIcon(), context));
 
             appWidgetManager.updateAppWidget(widgetId, remoteViews);
         }

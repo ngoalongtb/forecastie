@@ -15,19 +15,19 @@ import android.widget.TextView;
 import java.util.ArrayList;
 
 import com.gfd.cropwis.R;
-import com.gfd.cropwis.models.Weather;
+import com.gfd.cropwis.models.Weather5Day;
 
 public class LocationsRecyclerAdapter extends RecyclerView.Adapter<LocationsRecyclerAdapter.LocationsViewHolder> {
     private LayoutInflater inflater;
     private ItemClickListener itemClickListener;
     private Context context;
-    private ArrayList<Weather> weatherArrayList;
+    private ArrayList<Weather5Day> weather5DayArrayList;
     private boolean darkTheme;
     private boolean blackTheme;
 
-    public LocationsRecyclerAdapter(Context context, ArrayList<Weather> weatherArrayList, boolean darkTheme, boolean blackTheme) {
+    public LocationsRecyclerAdapter(Context context, ArrayList<Weather5Day> weather5DayArrayList, boolean darkTheme, boolean blackTheme) {
         this.context = context;
-        this.weatherArrayList = weatherArrayList;
+        this.weather5DayArrayList = weather5DayArrayList;
         this.darkTheme = darkTheme;
         this.blackTheme = blackTheme;
 
@@ -43,16 +43,16 @@ public class LocationsRecyclerAdapter extends RecyclerView.Adapter<LocationsRecy
     @Override
     public void onBindViewHolder(LocationsViewHolder holder, int position) {
         Typeface weatherFont = Typeface.createFromAsset(context.getAssets(), "fonts/weather.ttf");
-        Weather weather = weatherArrayList.get(position);
+        Weather5Day weather5Day = weather5DayArrayList.get(position);
 
-        holder.cityTextView.setText(String.format("%s, %s", weather.getCity(), weather.getCountry()));
-        holder.temperatureTextView.setText(weather.getTemperature());
-        holder.descriptionTextView.setText(weather.getDescription());
-        holder.iconTextView.setText(weather.getIcon());
+        holder.cityTextView.setText(String.format("%s, %s", weather5Day.getCity(), weather5Day.getCountry()));
+        holder.temperatureTextView.setText(weather5Day.getTemperature());
+        holder.descriptionTextView.setText(weather5Day.getDescription());
+        holder.iconTextView.setText(weather5Day.getIcon());
         holder.iconTextView.setTypeface(weatherFont);
 
         holder.webView.getSettings().setJavaScriptEnabled(true);
-        holder.webView.loadUrl("file:///android_asset/map.html?lat=" + weather.getLat()+ "&lon=" + weather.getLon() + "&appid=" + "notneeded&displayPin=true");
+        holder.webView.loadUrl("file:///android_asset/map.html?lat=" + weather5Day.getLat()+ "&lon=" + weather5Day.getLon() + "&appid=" + "notneeded&displayPin=true");
 
         if (darkTheme || blackTheme) {
             holder.cityTextView.setTextColor(Color.WHITE);
@@ -72,7 +72,7 @@ public class LocationsRecyclerAdapter extends RecyclerView.Adapter<LocationsRecy
 
     @Override
     public int getItemCount() {
-        return weatherArrayList.size();
+        return weather5DayArrayList.size();
     }
 
     class LocationsViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
@@ -104,8 +104,8 @@ public class LocationsRecyclerAdapter extends RecyclerView.Adapter<LocationsRecy
         }
     }
 
-    public Weather getItem(int position) {
-        return weatherArrayList.get(position);
+    public Weather5Day getItem(int position) {
+        return weather5DayArrayList.get(position);
     }
 
     public void setClickListener(ItemClickListener itemClickListener) {

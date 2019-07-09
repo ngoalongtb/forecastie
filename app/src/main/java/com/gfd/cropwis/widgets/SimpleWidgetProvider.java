@@ -11,7 +11,7 @@ import android.widget.RemoteViews;
 import com.gfd.cropwis.AlarmReceiver;
 import com.gfd.cropwis.activities.MainActivity;
 import com.gfd.cropwis.R;
-import com.gfd.cropwis.models.Weather;
+import com.gfd.cropwis.models.Weather5Day;
 
 public class SimpleWidgetProvider extends AbstractWidgetProvider {
     @Override
@@ -32,9 +32,9 @@ public class SimpleWidgetProvider extends AbstractWidgetProvider {
             remoteViews.setOnClickPendingIntent(R.id.widgetRoot, pendingIntent2);
 
             SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(context);
-            Weather widgetWeather = new Weather();
+            Weather5Day widgetWeather5Day = new Weather5Day();
             if(!sp.getString("lastToday", "").equals("")) {
-                widgetWeather = parseWidgetJson(sp.getString("lastToday", ""), context);
+                widgetWeather5Day = parseWidgetJson(sp.getString("lastToday", ""), context);
             }
             else {
                 try {
@@ -45,10 +45,10 @@ public class SimpleWidgetProvider extends AbstractWidgetProvider {
                 return;
             }
 
-            remoteViews.setTextViewText(R.id.widgetCity, widgetWeather.getCity() + ", " + widgetWeather.getCountry());
-            remoteViews.setTextViewText(R.id.widgetTemperature, widgetWeather.getTemperature());
-            remoteViews.setTextViewText(R.id.widgetDescription, widgetWeather.getDescription());
-            remoteViews.setImageViewBitmap(R.id.widgetIcon, getWeatherIcon(widgetWeather.getIcon(), context));
+            remoteViews.setTextViewText(R.id.widgetCity, widgetWeather5Day.getCity() + ", " + widgetWeather5Day.getCountry());
+            remoteViews.setTextViewText(R.id.widgetTemperature, widgetWeather5Day.getTemperature());
+            remoteViews.setTextViewText(R.id.widgetDescription, widgetWeather5Day.getDescription());
+            remoteViews.setImageViewBitmap(R.id.widgetIcon, getWeatherIcon(widgetWeather5Day.getIcon(), context));
 
             appWidgetManager.updateAppWidget(widgetId, remoteViews);
         }

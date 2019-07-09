@@ -29,7 +29,7 @@ import java.util.Calendar;
 import com.gfd.cropwis.R;
 import com.gfd.cropwis.activities.MainActivity;
 import com.gfd.cropwis.adapters.LocationsRecyclerAdapter;
-import com.gfd.cropwis.models.Weather;
+import com.gfd.cropwis.models.Weather5Day;
 import com.gfd.cropwis.utils.Formatting;
 import com.gfd.cropwis.utils.UnitConvertor;
 
@@ -82,15 +82,15 @@ public class AmbiguousLocationDialogFragment extends DialogFragment implements L
 
         try {
             final JSONArray cityListArray = new JSONArray(bundle.getString("cityList"));
-            final ArrayList<Weather> weatherArrayList = new ArrayList<>();
+            final ArrayList<Weather5Day> weather5DayArrayList = new ArrayList<>();
             recyclerAdapter =
-                    new LocationsRecyclerAdapter(getActivity().getApplicationContext(), weatherArrayList, darkTheme, blackTheme);
+                    new LocationsRecyclerAdapter(getActivity().getApplicationContext(), weather5DayArrayList, darkTheme, blackTheme);
 
             recyclerAdapter.setClickListener(AmbiguousLocationDialogFragment.this);
 
             for (int i = 0; i < cityListArray.length(); i++) {
                 final JSONObject cityObject = cityListArray.getJSONObject(i);
-                final JSONObject weatherObject = cityObject.getJSONArray("weather").getJSONObject(0);
+                final JSONObject weatherObject = cityObject.getJSONArray("weather5Day").getJSONObject(0);
                 final JSONObject mainObject = cityObject.getJSONObject("main");
                 final JSONObject coordObject = cityObject.getJSONObject("coord");
                 final JSONObject sysObject = cityObject.getJSONObject("sys");
@@ -108,22 +108,22 @@ public class AmbiguousLocationDialogFragment extends DialogFragment implements L
 
                 calendar.setTimeInMillis(Long.parseLong(dateMsString));
 
-                Weather weather = new Weather();
-                weather.setCity(city);
-                weather.setCountry(country);
-                weather.setId(cityId);
-                weather.setDescription(description.substring(0, 1).toUpperCase() + description.substring(1));
-                weather.setLat(lat);
-                weather.setLon(lon);
-                weather.setIcon(formatting.setWeatherIcon(Integer.parseInt(weatherId), calendar.get(Calendar.HOUR_OF_DAY)));
+                Weather5Day weather5Day = new Weather5Day();
+                weather5Day.setCity(city);
+                weather5Day.setCountry(country);
+                weather5Day.setId(cityId);
+                weather5Day.setDescription(description.substring(0, 1).toUpperCase() + description.substring(1));
+                weather5Day.setLat(lat);
+                weather5Day.setLon(lon);
+                weather5Day.setIcon(formatting.setWeatherIcon(Integer.parseInt(weatherId), calendar.get(Calendar.HOUR_OF_DAY)));
 
                 if (sharedPreferences.getBoolean("displayDecimalZeroes", false)) {
-                    weather.setTemperature(new DecimalFormat("0.0").format(temperature) + " " + sharedPreferences.getString("unit", "°C"));
+                    weather5Day.setTemperature(new DecimalFormat("0.0").format(temperature) + " " + sharedPreferences.getString("unit", "°C"));
                 } else {
-                    weather.setTemperature(new DecimalFormat("#.#").format(temperature) + " " + sharedPreferences.getString("unit", "°C"));
+                    weather5Day.setTemperature(new DecimalFormat("#.#").format(temperature) + " " + sharedPreferences.getString("unit", "°C"));
                 }
 
-                weatherArrayList.add(weather);
+                weather5DayArrayList.add(weather5Day);
             }
 
             recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
@@ -150,11 +150,11 @@ public class AmbiguousLocationDialogFragment extends DialogFragment implements L
     @SuppressLint("ApplySharedPref")
     @Override
     public void onItemClickListener(View view, int position) {
-        final Weather weather = recyclerAdapter.getItem(position);
+        final Weather5Day weather5Day = recyclerAdapter.getItem(position);
         final Intent intent = new Intent(getActivity(), MainActivity.class);
         final Bundle bundle = new Bundle();
 
-        sharedPreferences.edit().putString("cityId", weather.getId()).commit();
+        sharedPreferences.edit().putString("cityId", weather5Day.getId()).commit();
         bundle.putBoolean("shouldRefresh", true);
         intent.putExtras(bundle);
 

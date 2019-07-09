@@ -8,4 +8,7 @@ public class Constants {
     public static final int DEFAULT_ZOOM_LEVEL = 7;
 
     public static final String HOTSPOT_API = "http://cropinformationsystem.net/ug/service/hotspot?year=%d&week=%d";
+    public static final String NEW_HOTSPOT = "http://cropwis.org/ug/service/newhotspot";
+    public static final String FORECAST_16_DAYS = "http://cropwis.org/ug/service/openweather?lat=%s&lng=%s";
+    public static final String FORECAST_16_DAYS_KEY = "FORECAST_16_DAYS_KEY";
 }

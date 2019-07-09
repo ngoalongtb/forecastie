@@ -18,15 +18,15 @@ import java.util.TimeZone;
 
 import com.gfd.cropwis.R;
 import com.gfd.cropwis.activities.MainActivity;
-import com.gfd.cropwis.models.Weather;
+import com.gfd.cropwis.models.Weather5Day;
 import com.gfd.cropwis.models.WeatherViewHolder;
 import com.gfd.cropwis.utils.UnitConvertor;
 
 public class WeatherRecyclerAdapter extends RecyclerView.Adapter<WeatherViewHolder> {
-    private List<Weather> itemList;
+    private List<Weather5Day> itemList;
     private Context context;
 
-    public WeatherRecyclerAdapter(Context context, List<Weather> itemList) {
+    public WeatherRecyclerAdapter(Context context, List<Weather5Day> itemList) {
         this.itemList = itemList;
         this.context = context;
     }
@@ -41,24 +41,29 @@ public class WeatherRecyclerAdapter extends RecyclerView.Adapter<WeatherViewHold
 
     @Override
     public void onBindViewHolder(WeatherViewHolder customViewHolder, int i) {
-        Weather weatherItem = itemList.get(i);
+        Weather5Day weather5DayItem = itemList.get(i);
 
         SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(context);
-
+        float temperature = 0;
         // Temperature
-        float temperature = UnitConvertor.convertTemperature(Float.parseFloat(weatherItem.getTemperature()), sp);
+        if (weather5DayItem.getUvIndex() == 0) {
+            temperature = Float.parseFloat(weather5DayItem.getTemperature());
+        } else {
+            temperature = UnitConvertor.convertTemperature(Float.parseFloat(weather5DayItem.getTemperature()), sp);
+        }
+
         if (sp.getBoolean("temperatureInteger", false)) {
             temperature = Math.round(temperature);
         }
 
         // Rain
-        double rain = Double.parseDouble(weatherItem.getRain());
+        double rain = Double.parseDouble(weather5DayItem.getRain());
         String rainString = UnitConvertor.getRainString(rain, sp);
 
         // Wind
         double wind;
         try {
-            wind = Double.parseDouble(weatherItem.getWind());
+            wind = Double.parseDouble(weather5DayItem.getWind());
         } catch (Exception e) {
             e.printStackTrace();
             wind = 0;
@@ -66,7 +71,7 @@ public class WeatherRecyclerAdapter extends RecyclerView.Adapter<WeatherViewHold
         wind = UnitConvertor.convertWind(wind, sp);
 
         // Pressure
-        double pressure = UnitConvertor.convertPressure((float) Double.parseDouble(weatherItem.getPressure()), sp);
+        double pressure = UnitConvertor.convertPressure((float) Double.parseDouble(weather5DayItem.getPressure()), sp);
 
         TimeZone tz = TimeZone.getDefault();
         String defaultDateFormat = context.getResources().getStringArray(R.array.dateFormatsValues)[0];
@@ -78,7 +83,7 @@ public class WeatherRecyclerAdapter extends RecyclerView.Adapter<WeatherViewHold
         try {
             SimpleDateFormat resultFormat = new SimpleDateFormat(dateFormat);
             resultFormat.setTimeZone(tz);
-            dateString = resultFormat.format(weatherItem.getDate());
+            dateString = resultFormat.format(weather5DayItem.getDate());
         } catch (IllegalArgumentException e) {
             dateString = context.getResources().getString(R.string.error_dateFormat);
         }
@@ -88,9 +93,9 @@ public class WeatherRecyclerAdapter extends RecyclerView.Adapter<WeatherViewHold
             /* Unfortunately, the getColor() that takes a theme (the next commented line) is Android 6.0 only, so we have to do it manually
              * customViewHolder.itemView.setBackgroundColor(context.getResources().getColor(R.attr.colorTintedBackground, context.getTheme())); */
             int color;
-            if (weatherItem.getNumDaysFrom(now) > 1) {
+            if (weather5DayItem.getNumDaysFrom(now) > 1) {
                 TypedArray ta = context.obtainStyledAttributes(new int[]{R.attr.colorTintedBackground, R.attr.colorBackground});
-                if (weatherItem.getNumDaysFrom(now) % 2 == 1) {
+                if (weather5DayItem.getNumDaysFrom(now) % 2 == 1) {
                     color = ta.getColor(0, context.getResources().getColor(R.color.colorTintedBackground));
                 } else {
                     /* We must explicitly set things back, because RecyclerView seems to reuse views and
@@ -109,22 +114,22 @@ public class WeatherRecyclerAdapter extends RecyclerView.Adapter<WeatherViewHold
         } else {
             customViewHolder.itemTemperature.setText(new DecimalFormat("#.#").format(temperature) + " " + sp.getString("unit", "°C"));
         }
-        customViewHolder.itemDescription.setText(weatherItem.getDescription().substring(0, 1).toUpperCase() +
-                weatherItem.getDescription().substring(1) + rainString);
+        customViewHolder.itemDescription.setText(weather5DayItem.getDescription().substring(0, 1).toUpperCase() +
+                weather5DayItem.getDescription().substring(1) + rainString);
         Typeface weatherFont = Typeface.createFromAsset(context.getAssets(), "fonts/weather.ttf");
         customViewHolder.itemIcon.setTypeface(weatherFont);
-        customViewHolder.itemIcon.setText(weatherItem.getIcon());
+        customViewHolder.itemIcon.setText(weather5DayItem.getIcon());
         if (sp.getString("speedUnit", "m/s").equals("bft")) {
             customViewHolder.itemyWind.setText(context.getString(R.string.wind) + ": " +
-                    UnitConvertor.getBeaufortName((int) wind) + " " + MainActivity.getWindDirectionString(sp, context, weatherItem));
+                    UnitConvertor.getBeaufortName((int) wind) + " " + MainActivity.getWindDirectionString(sp, context, weather5DayItem));
         } else {
             customViewHolder.itemyWind.setText(context.getString(R.string.wind) + ": " + new DecimalFormat("0.0").format(wind) + " " +
                     MainActivity.localize(sp, context, "speedUnit", "m/s")
-                    + " " + MainActivity.getWindDirectionString(sp, context, weatherItem));
+                    + " " + MainActivity.getWindDirectionString(sp, context, weather5DayItem));
         }
         customViewHolder.itemPressure.setText(context.getString(R.string.pressure) + ": " + new DecimalFormat("0.0").format(pressure) + " " +
                 MainActivity.localize(sp, context, "pressureUnit", "hPa"));
-        customViewHolder.itemHumidity.setText(context.getString(R.string.humidity) + ": " + weatherItem.getHumidity() + " %");
+        customViewHolder.itemHumidity.setText(context.getString(R.string.humidity) + ": " + weather5DayItem.getHumidity() + " %");
     }
 
     @Override

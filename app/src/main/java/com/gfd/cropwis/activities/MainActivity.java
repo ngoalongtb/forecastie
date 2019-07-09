@@ -13,11 +13,12 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
-import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.provider.Settings;
+
+import com.gfd.cropwis.models.Weather5Day;
 import com.google.android.material.appbar.AppBarLayout;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.tabs.TabLayout;
@@ -29,12 +30,11 @@ import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.widget.Toolbar;
-import android.text.InputType;
+
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.EditText;
 import android.widget.TextView;
 
 import org.json.JSONArray;
@@ -60,7 +60,6 @@ import com.gfd.cropwis.fragments.AboutDialogFragment;
 import com.gfd.cropwis.fragments.AmbiguousLocationDialogFragment;
 import com.gfd.cropwis.fragments.NavigationDrawerFragment;
 import com.gfd.cropwis.fragments.RecyclerViewFragment;
-import com.gfd.cropwis.models.Weather;
 import com.gfd.cropwis.tasks.GenericRequestTask;
 import com.gfd.cropwis.tasks.ParseResult;
 import com.gfd.cropwis.tasks.TaskOutput;
@@ -80,7 +79,7 @@ public class MainActivity extends BaseActivity implements LocationListener {
     private static Map<String, Integer> pressUnits = new HashMap<>(3);
     private static boolean mappingsInitialised = false;
 
-    private Weather todayWeather = new Weather();
+    private Weather5Day todayWeather5Day = new Weather5Day();
 
     private TextView todayTemperature;
     private TextView todayDescription;
@@ -105,9 +104,10 @@ public class MainActivity extends BaseActivity implements LocationListener {
     private boolean widgetTransparent;
     private boolean destroyed = false;
 
-    private List<Weather> longTermWeather = new ArrayList<>();
-    private List<Weather> longTermTodayWeather = new ArrayList<>();
-    private List<Weather> longTermTomorrowWeather = new ArrayList<>();
+    private List<Weather5Day> longTermWeather5Days = new ArrayList<>();
+    private List<Weather5Day> longTerm16DaysWeather = new ArrayList<>();
+    private List<Weather5Day> longTermTodayWeather5Days = new ArrayList<>();
+    private List<Weather5Day> longTermTomorrowWeather5Days = new ArrayList<>();
 
     public String recentCityId = "";
 
@@ -119,6 +119,13 @@ public class MainActivity extends BaseActivity implements LocationListener {
         PreferenceManager.setDefaultValues(this, R.xml.prefs, false);
 
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+        boolean firstTime = prefs.getBoolean("firstTime", true);
+        if (firstTime) {
+            getCityByLocation();
+            SharedPreferences.Editor editor = prefs.edit();
+            editor.putBoolean("firstTime", false);
+            editor.commit();
+        }
 
         widgetTransparent = prefs.getBoolean("transparentWidget", false);
         setTheme(theme = UI.getTheme(prefs.getString("theme", "fresh")));
@@ -209,11 +216,13 @@ public class MainActivity extends BaseActivity implements LocationListener {
     public WeatherRecyclerAdapter getAdapter(int id) {
         WeatherRecyclerAdapter weatherRecyclerAdapter;
         if (id == 0) {
-            weatherRecyclerAdapter = new WeatherRecyclerAdapter(this, longTermTodayWeather);
+            weatherRecyclerAdapter = new WeatherRecyclerAdapter(this, longTermTodayWeather5Days);
         } else if (id == 1) {
-            weatherRecyclerAdapter = new WeatherRecyclerAdapter(this, longTermTomorrowWeather);
+            weatherRecyclerAdapter = new WeatherRecyclerAdapter(this, longTermTomorrowWeather5Days);
+        } else if (id == 2) {
+            weatherRecyclerAdapter = new WeatherRecyclerAdapter(this, longTermWeather5Days);
         } else {
-            weatherRecyclerAdapter = new WeatherRecyclerAdapter(this, longTermWeather);
+            weatherRecyclerAdapter = new WeatherRecyclerAdapter(this, longTerm16DaysWeather);
         }
         return weatherRecyclerAdapter;
     }
@@ -240,6 +249,7 @@ public class MainActivity extends BaseActivity implements LocationListener {
             getTodayWeather();
             getLongTermWeather();
             getTodayUVIndex();
+            getLongTerm16DaysWeather();
         }
     }
 
@@ -262,8 +272,8 @@ public class MainActivity extends BaseActivity implements LocationListener {
 
         String lastUVIToday = sp.getString("lastToday", "");
         if (!lastUVIToday.isEmpty()) {
-            double latitude = todayWeather.getLat();
-            double longitude = todayWeather.getLon();
+            double latitude = todayWeather5Day.getLat();
+            double longitude = todayWeather5Day.getLon();
             if (latitude == 0 && longitude == 0) {
                 return;
             }
@@ -282,11 +292,21 @@ public class MainActivity extends BaseActivity implements LocationListener {
         if (!lastLongterm.isEmpty()) {
             new LongTermWeatherTask(this, this, progressDialog).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, "cachedResponse", lastLongterm);
         }
+
+        String lastLongterm16Days = sp.getString("lastLongterm16Days", "");
+        if (!lastLongterm16Days.isEmpty()) {
+            double latitude = todayWeather5Day.getLat();
+            double longitude = todayWeather5Day.getLon();
+            if (latitude == 0 && longitude == 0) {
+                return;
+            }
+            new LongTerm16DaysWeatherTask(this, this, progressDialog).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, "coords", Double.toString(latitude), Double.toString(longitude));
+        }
     }
 
     private void getTodayUVIndex() {
-        double latitude = todayWeather.getLat();
-        double longitude = todayWeather.getLon();
+        double latitude = todayWeather5Day.getLat();
+        double longitude = todayWeather5Day.getLon();
         new TodayUVITask(this, this, progressDialog).execute("coords", Double.toString(latitude), Double.toString(longitude));
     }
 
@@ -298,31 +318,37 @@ public class MainActivity extends BaseActivity implements LocationListener {
         new LongTermWeatherTask(this, this, progressDialog).execute();
     }
 
-    private void searchCities() {
-        AlertDialog.Builder alert = new AlertDialog.Builder(this);
-        alert.setTitle(this.getString(R.string.search_title));
-        final EditText input = new EditText(this);
-        input.setInputType(InputType.TYPE_CLASS_TEXT);
-        input.setMaxLines(1);
-        input.setSingleLine(true);
-        //alert.setView(input, 32, 0, 32, 0);
-
-        alert.setPositiveButton(R.string.dialog_ok, new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int whichButton) {
-                String result = input.getText().toString();
-                if (!result.isEmpty()) {
-                    new FindCitiesByNameTask(getApplicationContext(),
-                            MainActivity.this, progressDialog).execute("city", result);
-                }
-            }
-        });
-        alert.setNegativeButton(R.string.dialog_cancel, new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int whichButton) {
-                // Cancelled
-            }
-        });
-        alert.show();
+    private void getLongTerm16DaysWeather() {
+        double latitude = todayWeather5Day.getLat();
+        double longitude = todayWeather5Day.getLon();
+        new LongTerm16DaysWeatherTask(this, this, progressDialog).execute("coords", Double.toString(latitude), Double.toString(longitude));
     }
+
+//    private void searchCities() {
+//        AlertDialog.Builder alert = new AlertDialog.Builder(this);
+//        alert.setTitle(this.getString(R.string.search_title));
+//        final EditText input = new EditText(this);
+//        input.setInputType(InputType.TYPE_CLASS_TEXT);
+//        input.setMaxLines(1);
+//        input.setSingleLine(true);
+//        //alert.setView(input, 32, 0, 32, 0);
+//
+//        alert.setPositiveButton(R.string.dialog_ok, new DialogInterface.OnClickListener() {
+//            public void onClick(DialogInterface dialog, int whichButton) {
+//                String result = input.getText().toString();
+//                if (!result.isEmpty()) {
+//                    new FindCitiesByNameTask(getApplicationContext(),
+//                            MainActivity.this, progressDialog).execute("city", result);
+//                }
+//            }
+//        });
+//        alert.setNegativeButton(R.string.dialog_cancel, new DialogInterface.OnClickListener() {
+//            public void onClick(DialogInterface dialog, int whichButton) {
+//                // Cancelled
+//            }
+//        });
+//        alert.show();
+//    }
 
     private void saveLocation(String result) {
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(MainActivity.this);
@@ -370,34 +396,34 @@ public class MainActivity extends BaseActivity implements LocationListener {
             JSONObject countryObj = reader.optJSONObject("sys");
             if (countryObj != null) {
                 country = countryObj.getString("country");
-                todayWeather.setSunrise(countryObj.getString("sunrise"));
-                todayWeather.setSunset(countryObj.getString("sunset"));
+                todayWeather5Day.setSunrise(countryObj.getString("sunrise"));
+                todayWeather5Day.setSunset(countryObj.getString("sunset"));
             }
-            todayWeather.setCity(city);
-            todayWeather.setCountry(country);
+            todayWeather5Day.setCity(city);
+            todayWeather5Day.setCountry(country);
 
             JSONObject coordinates = reader.getJSONObject("coord");
             if (coordinates != null) {
-                todayWeather.setLat(coordinates.getDouble("lat"));
-                todayWeather.setLon(coordinates.getDouble("lon"));
+                todayWeather5Day.setLat(coordinates.getDouble("lat"));
+                todayWeather5Day.setLon(coordinates.getDouble("lon"));
                 SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(this);
-                sp.edit().putFloat("latitude", (float) todayWeather.getLat()).putFloat("longitude", (float) todayWeather.getLon()).commit();
+                sp.edit().putFloat("latitude", (float) todayWeather5Day.getLat()).putFloat("longitude", (float) todayWeather5Day.getLon()).commit();
             }
 
             JSONObject main = reader.getJSONObject("main");
 
-            todayWeather.setTemperature(main.getString("temp"));
-            todayWeather.setDescription(reader.getJSONArray("weather").getJSONObject(0).getString("description"));
+            todayWeather5Day.setTemperature(main.getString("temp"));
+            todayWeather5Day.setDescription(reader.getJSONArray("weather").getJSONObject(0).getString("description"));
             JSONObject windObj = reader.getJSONObject("wind");
-            todayWeather.setWind(windObj.getString("speed"));
+            todayWeather5Day.setWind(windObj.getString("speed"));
             if (windObj.has("deg")) {
-                todayWeather.setWindDirectionDegree(windObj.getDouble("deg"));
+                todayWeather5Day.setWindDirectionDegree(windObj.getDouble("deg"));
             } else {
                 Log.e("parseTodayJson", "No wind direction available");
-                todayWeather.setWindDirectionDegree(null);
+                todayWeather5Day.setWindDirectionDegree(null);
             }
-            todayWeather.setPressure(main.getString("pressure"));
-            todayWeather.setHumidity(main.getString("humidity"));
+            todayWeather5Day.setPressure(main.getString("pressure"));
+            todayWeather5Day.setHumidity(main.getString("humidity"));
 
             JSONObject rainObj = reader.optJSONObject("rain");
             String rain;
@@ -411,11 +437,11 @@ public class MainActivity extends BaseActivity implements LocationListener {
                     rain = "0";
                 }
             }
-            todayWeather.setRain(rain);
+            todayWeather5Day.setRain(rain);
 
             final String idString = reader.getJSONArray("weather").getJSONObject(0).getString("id");
-            todayWeather.setId(idString);
-            todayWeather.setIcon(formatting.setWeatherIcon(Integer.parseInt(idString), Calendar.getInstance().get(Calendar.HOUR_OF_DAY)));
+            todayWeather5Day.setId(idString);
+            todayWeather5Day.setIcon(formatting.setWeatherIcon(Integer.parseInt(idString), Calendar.getInstance().get(Calendar.HOUR_OF_DAY)));
 
             SharedPreferences.Editor editor = PreferenceManager.getDefaultSharedPreferences(MainActivity.this).edit();
             editor.putString("lastToday", result);
@@ -436,12 +462,12 @@ public class MainActivity extends BaseActivity implements LocationListener {
 
             final String code = reader.optString("cod");
             if ("404".equals(code)) {
-                todayWeather.setUvIndex(-1);
+                todayWeather5Day.setUvIndex(-1);
                 return ParseResult.CITY_NOT_FOUND;
             }
 
             double value = reader.getDouble("value");
-            todayWeather.setUvIndex(value);
+            todayWeather5Day.setUvIndex(value);
             SharedPreferences.Editor editor = PreferenceManager.getDefaultSharedPreferences(MainActivity.this).edit();
             editor.putString("lastUVIToday", result);
             editor.commit();
@@ -456,7 +482,7 @@ public class MainActivity extends BaseActivity implements LocationListener {
 
     private void updateTodayWeatherUI() {
         try {
-            if (todayWeather.getCountry().isEmpty()) {
+            if (todayWeather5Day.getCountry().isEmpty()) {
                 preloadWeather();
                 return;
             }
@@ -464,27 +490,27 @@ public class MainActivity extends BaseActivity implements LocationListener {
             preloadWeather();
             return;
         }
-        String city = todayWeather.getCity();
-        String country = todayWeather.getCountry();
+        String city = todayWeather5Day.getCity();
+        String country = todayWeather5Day.getCountry();
         DateFormat timeFormat = android.text.format.DateFormat.getTimeFormat(getApplicationContext());
         getSupportActionBar().setTitle(city + (country.isEmpty() ? "" : ", " + country));
 
         SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(MainActivity.this);
 
         // Temperature
-        float temperature = UnitConvertor.convertTemperature(Float.parseFloat(todayWeather.getTemperature()), sp);
+        float temperature = UnitConvertor.convertTemperature(Float.parseFloat(todayWeather5Day.getTemperature()), sp);
         if (sp.getBoolean("temperatureInteger", false)) {
             temperature = Math.round(temperature);
         }
 
         // Rain
-        double rain = Double.parseDouble(todayWeather.getRain());
+        double rain = Double.parseDouble(todayWeather5Day.getRain());
         String rainString = UnitConvertor.getRainString(rain, sp);
 
         // Wind
         double wind;
         try {
-            wind = Double.parseDouble(todayWeather.getWind());
+            wind = Double.parseDouble(todayWeather5Day.getWind());
         } catch (Exception e) {
             e.printStackTrace();
             wind = 0;
@@ -492,26 +518,26 @@ public class MainActivity extends BaseActivity implements LocationListener {
         wind = UnitConvertor.convertWind(wind, sp);
 
         // Pressure
-        double pressure = UnitConvertor.convertPressure((float) Double.parseDouble(todayWeather.getPressure()), sp);
+        double pressure = UnitConvertor.convertPressure((float) Double.parseDouble(todayWeather5Day.getPressure()), sp);
 
         todayTemperature.setText(new DecimalFormat("0.#").format(temperature) + " " + sp.getString("unit", "°C"));
-        todayDescription.setText(todayWeather.getDescription().substring(0, 1).toUpperCase() +
-                todayWeather.getDescription().substring(1) + rainString);
+        todayDescription.setText(todayWeather5Day.getDescription().substring(0, 1).toUpperCase() +
+                todayWeather5Day.getDescription().substring(1) + rainString);
         if (sp.getString("speedUnit", "m/s").equals("bft")) {
             todayWind.setText(getString(R.string.wind) + ": " +
                     UnitConvertor.getBeaufortName((int) wind) +
-                    (todayWeather.isWindDirectionAvailable() ? " " + getWindDirectionString(sp, this, todayWeather) : ""));
+                    (todayWeather5Day.isWindDirectionAvailable() ? " " + getWindDirectionString(sp, this, todayWeather5Day) : ""));
         } else {
             todayWind.setText(getString(R.string.wind) + ": " + new DecimalFormat("0.0").format(wind) + " " +
                     localize(sp, "speedUnit", "m/s") +
-                    (todayWeather.isWindDirectionAvailable() ? " " + getWindDirectionString(sp, this, todayWeather) : ""));
+                    (todayWeather5Day.isWindDirectionAvailable() ? " " + getWindDirectionString(sp, this, todayWeather5Day) : ""));
         }
         todayPressure.setText(getString(R.string.pressure) + ": " + new DecimalFormat("0.0").format(pressure) + " " +
                 localize(sp, "pressureUnit", "hPa"));
-        todayHumidity.setText(getString(R.string.humidity) + ": " + todayWeather.getHumidity() + " %");
-        todaySunrise.setText(getString(R.string.sunrise) + ": " + timeFormat.format(todayWeather.getSunrise()));
-        todaySunset.setText(getString(R.string.sunset) + ": " + timeFormat.format(todayWeather.getSunset()));
-        todayIcon.setText(todayWeather.getIcon());
+        todayHumidity.setText(getString(R.string.humidity) + ": " + todayWeather5Day.getHumidity() + " %");
+        todaySunrise.setText(getString(R.string.sunrise) + ": " + timeFormat.format(todayWeather5Day.getSunrise()));
+        todaySunset.setText(getString(R.string.sunset) + ": " + timeFormat.format(todayWeather5Day.getSunset()));
+        todayIcon.setText(todayWeather5Day.getIcon());
 
         todayIcon.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -524,7 +550,7 @@ public class MainActivity extends BaseActivity implements LocationListener {
 
     private void updateUVIndexUI() {
         try {
-            if (todayWeather.getCountry().isEmpty()) {
+            if (todayWeather5Day.getCountry().isEmpty()) {
                 return;
             }
         } catch (Exception e) {
@@ -533,7 +559,7 @@ public class MainActivity extends BaseActivity implements LocationListener {
         }
 
         // UV Index
-        double uvIndex = todayWeather.getUvIndex();
+        double uvIndex = todayWeather5Day.getUvIndex();
         todayUvIndex.setText(getString(R.string.uvindex) + ": " + UnitConvertor.convertUvIndexToRiskLevel(uvIndex));
     }
 
@@ -544,35 +570,35 @@ public class MainActivity extends BaseActivity implements LocationListener {
 
             final String code = reader.optString("cod");
             if ("404".equals(code)) {
-                if (longTermWeather == null) {
-                    longTermWeather = new ArrayList<>();
-                    longTermTodayWeather = new ArrayList<>();
-                    longTermTomorrowWeather = new ArrayList<>();
+                if (longTermWeather5Days == null) {
+                    longTermWeather5Days = new ArrayList<>();
+                    longTermTodayWeather5Days = new ArrayList<>();
+                    longTermTomorrowWeather5Days = new ArrayList<>();
                 }
                 return ParseResult.CITY_NOT_FOUND;
             }
 
-            longTermWeather = new ArrayList<>();
-            longTermTodayWeather = new ArrayList<>();
-            longTermTomorrowWeather = new ArrayList<>();
+            longTermWeather5Days = new ArrayList<>();
+            longTermTodayWeather5Days = new ArrayList<>();
+            longTermTomorrowWeather5Days = new ArrayList<>();
 
             JSONArray list = reader.getJSONArray("list");
             for (i = 0; i < list.length(); i++) {
-                Weather weather = new Weather();
+                Weather5Day weather5Day = new Weather5Day();
 
                 JSONObject listItem = list.getJSONObject(i);
                 JSONObject main = listItem.getJSONObject("main");
 
-                weather.setDate(listItem.getString("dt"));
-                weather.setTemperature(main.getString("temp"));
-                weather.setDescription(listItem.optJSONArray("weather").getJSONObject(0).getString("description"));
+                weather5Day.setDate(listItem.getString("dt"));
+                weather5Day.setTemperature(main.getString("temp"));
+                weather5Day.setDescription(listItem.optJSONArray("weather").getJSONObject(0).getString("description"));
                 JSONObject windObj = listItem.optJSONObject("wind");
                 if (windObj != null) {
-                    weather.setWind(windObj.getString("speed"));
-                    weather.setWindDirectionDegree(windObj.getDouble("deg"));
+                    weather5Day.setWind(windObj.getString("speed"));
+                    weather5Day.setWindDirectionDegree(windObj.getDouble("deg"));
                 }
-                weather.setPressure(main.getString("pressure"));
-                weather.setHumidity(main.getString("humidity"));
+                weather5Day.setPressure(main.getString("pressure"));
+                weather5Day.setHumidity(main.getString("humidity"));
 
                 JSONObject rainObj = listItem.optJSONObject("rain");
                 String rain = "";
@@ -586,15 +612,15 @@ public class MainActivity extends BaseActivity implements LocationListener {
                         rain = "0";
                     }
                 }
-                weather.setRain(rain);
+                weather5Day.setRain(rain);
 
                 final String idString = listItem.optJSONArray("weather").getJSONObject(0).getString("id");
-                weather.setId(idString);
+                weather5Day.setId(idString);
 
                 final String dateMsString = listItem.getString("dt") + "000";
                 Calendar cal = Calendar.getInstance();
                 cal.setTimeInMillis(Long.parseLong(dateMsString));
-                weather.setIcon(formatting.setWeatherIcon(Integer.parseInt(idString), cal.get(Calendar.HOUR_OF_DAY)));
+                weather5Day.setIcon(formatting.setWeatherIcon(Integer.parseInt(idString), cal.get(Calendar.HOUR_OF_DAY)));
 
                 Calendar today = Calendar.getInstance();
                 today.set(Calendar.HOUR_OF_DAY, 0);
@@ -609,11 +635,11 @@ public class MainActivity extends BaseActivity implements LocationListener {
                 later.add(Calendar.DAY_OF_YEAR, 2);
 
                 if (cal.before(tomorrow)) {
-                    longTermTodayWeather.add(weather);
+                    longTermTodayWeather5Days.add(weather5Day);
                 } else if (cal.before(later)) {
-                    longTermTomorrowWeather.add(weather);
+                    longTermTomorrowWeather5Days.add(weather5Day);
                 } else {
-                    longTermWeather.add(weather);
+                    longTermWeather5Days.add(weather5Day);
                 }
             }
             SharedPreferences.Editor editor = PreferenceManager.getDefaultSharedPreferences(MainActivity.this).edit();
@@ -628,6 +654,63 @@ public class MainActivity extends BaseActivity implements LocationListener {
         return ParseResult.OK;
     }
 
+    public ParseResult parseLongTerm16DaysJson(String result) {
+        int i;
+        try {
+            JSONObject reader = new JSONObject(result);
+
+            final String code = reader.optString("cod");
+            if ("404".equals(code)) {
+                if (longTerm16DaysWeather == null) {
+                    longTerm16DaysWeather = new ArrayList<>();
+                }
+                return ParseResult.CITY_NOT_FOUND;
+            }
+
+            longTerm16DaysWeather = new ArrayList<>();
+
+            JSONArray list = reader.getJSONArray("list");
+            for (i = 0; i < list.length(); i++) {
+                Weather5Day weather = new Weather5Day();
+
+                JSONObject listItem = list.getJSONObject(i);
+
+                weather.setDate(listItem.getString("dt"));
+                weather.setTemperature(listItem.getJSONObject("temp").getString("day"));
+                weather.setDescription(listItem.optJSONArray("weather").getJSONObject(0).getString("description"));
+                weather.setWind(listItem.getString("speed"));
+                weather.setWindDirectionDegree(listItem.optDouble("deg"));
+
+                weather.setPressure(listItem.getString("pressure"));
+                weather.setHumidity(listItem.getString("humidity"));
+                if (listItem.has("rain")) {
+                    weather.setRain(listItem.getString("rain"));
+                } else {
+                    weather.setRain("0");
+                }
+
+
+                final String idString = listItem.optJSONArray("weather").getJSONObject(0).getString("id");
+                weather.setId(idString);
+
+                final String dateMsString = listItem.getString("dt") + "000";
+                Calendar cal = Calendar.getInstance();
+                cal.setTimeInMillis(Long.parseLong(dateMsString));
+                weather.setIcon(formatting.setWeatherIcon(Integer.parseInt(idString), cal.get(Calendar.HOUR_OF_DAY)));
+
+                longTerm16DaysWeather.add(weather);
+            }
+            SharedPreferences.Editor editor = PreferenceManager.getDefaultSharedPreferences(MainActivity.this).edit();
+            editor.putString("lastLongterm16Days", result);
+            editor.commit();
+        } catch (JSONException e) {
+            Log.e("JSONException Data", result);
+            e.printStackTrace();
+            return ParseResult.JSON_EXCEPTION;
+        }
+
+        return ParseResult.OK;
+    }
     private void updateLongTermWeatherUI() {
         if (destroyed) {
             return;
@@ -651,7 +734,14 @@ public class MainActivity extends BaseActivity implements LocationListener {
         bundle.putInt("day", 2);
         RecyclerViewFragment recyclerViewFragment = new RecyclerViewFragment();
         recyclerViewFragment.setArguments(bundle);
-        viewPagerAdapter.addFragment(recyclerViewFragment, getString(R.string.later));
+        viewPagerAdapter.addFragment(recyclerViewFragment, "5 days later");
+
+        Bundle bundle16days = new Bundle();
+        bundle16days.putInt("day", 3);
+        RecyclerViewFragment recyclerView16dayFragment = new RecyclerViewFragment();
+        recyclerView16dayFragment.setArguments(bundle16days);
+        viewPagerAdapter.addFragment(recyclerView16dayFragment, "16 days later");
+        //TODOS get api
 
         int currentPage = viewPager.getCurrentItem();
 
@@ -659,7 +749,7 @@ public class MainActivity extends BaseActivity implements LocationListener {
         viewPager.setAdapter(viewPagerAdapter);
         tabLayout.setupWithViewPager(viewPager);
 
-        if (currentPage == 0 && longTermTodayWeather.isEmpty()) {
+        if (currentPage == 0 && longTermTodayWeather5Days.isEmpty()) {
             currentPage = 1;
         }
         viewPager.setCurrentItem(currentPage, false);
@@ -672,10 +762,11 @@ public class MainActivity extends BaseActivity implements LocationListener {
     }
 
     private boolean shouldUpdate() {
-        long lastUpdate = PreferenceManager.getDefaultSharedPreferences(this).getLong("lastUpdate", -1);
-        boolean cityChanged = PreferenceManager.getDefaultSharedPreferences(this).getBoolean("cityChanged", false);
-        // Update if never checked or last update is longer ago than specified threshold
-        return cityChanged || lastUpdate < 0 || (Calendar.getInstance().getTimeInMillis() - lastUpdate) > NO_UPDATE_REQUIRED_THRESHOLD;
+        return true;
+//        long lastUpdate = PreferenceManager.getDefaultSharedPreferences(this).getLong("lastUpdate", -1);
+//        boolean cityChanged = PreferenceManager.getDefaultSharedPreferences(this).getBoolean("cityChanged", false);
+//        // Update if never checked or last update is longer ago than specified threshold
+//        return cityChanged || lastUpdate < 0 || (Calendar.getInstance().getTimeInMillis() - lastUpdate) > NO_UPDATE_REQUIRED_THRESHOLD;
     }
 
     @Override
@@ -700,10 +791,10 @@ public class MainActivity extends BaseActivity implements LocationListener {
             Intent intent = new Intent(MainActivity.this, GraphActivity.class);
             startActivity(intent);
         }
-        if (id == R.id.action_search) {
-            searchCities();
-            return true;
-        }
+//        if (id == R.id.action_search) {
+//            searchCities();
+//            return true;
+//        }
         if (id == R.id.action_location) {
             getCityByLocation();
             return true;
@@ -715,6 +806,7 @@ public class MainActivity extends BaseActivity implements LocationListener {
         if (isNetworkAvailable()) {
             getTodayWeather();
             getLongTermWeather();
+            getLongTerm16DaysWeather();
             getTodayUVIndex();
         } else {
             Snackbar.make(appView, getString(R.string.msg_connection_not_available), Snackbar.LENGTH_LONG).show();
@@ -754,14 +846,14 @@ public class MainActivity extends BaseActivity implements LocationListener {
         return result;
     }
 
-    public static String getWindDirectionString(SharedPreferences sp, Context context, Weather weather) {
+    public static String getWindDirectionString(SharedPreferences sp, Context context, Weather5Day weather5Day) {
         try {
-            if (Double.parseDouble(weather.getWind()) != 0) {
+            if (Double.parseDouble(weather5Day.getWind()) != 0) {
                 String pref = sp.getString("windDirectionFormat", null);
                 if ("arrow".equals(pref)) {
-                    return weather.getWindDirection(8).getArrow(context);
+                    return weather5Day.getWindDirection(8).getArrow(context);
                 } else if ("abbr".equals(pref)) {
-                    return weather.getWindDirection().getLocalizedString(context);
+                    return weather5Day.getWindDirection().getLocalizedString(context);
                 }
             }
         } catch (Exception e) {
@@ -910,6 +1002,27 @@ public class MainActivity extends BaseActivity implements LocationListener {
         }
     }
 
+    class LongTerm16DaysWeatherTask extends GenericRequestTask {
+        public LongTerm16DaysWeatherTask(Context context, MainActivity activity, ProgressDialog progressDialog) {
+            super(context, activity, progressDialog);
+        }
+
+        @Override
+        protected ParseResult parseResponse(String response) {
+            return parseLongTerm16DaysJson(response);
+        }
+
+        @Override
+        protected String getAPIName() {
+            return Constants.FORECAST_16_DAYS_KEY;
+        }
+
+        @Override
+        protected void updateMainUI() {
+            updateLongTermWeatherUI();
+        }
+    }
+
     class LongTermWeatherTask extends GenericRequestTask {
         public LongTermWeatherTask(Context context, MainActivity activity, ProgressDialog progressDialog) {
             super(context, activity, progressDialog);
@@ -930,57 +1043,56 @@ public class MainActivity extends BaseActivity implements LocationListener {
             updateLongTermWeatherUI();
         }
     }
-
-    class FindCitiesByNameTask extends GenericRequestTask {
-
-        public FindCitiesByNameTask(Context context, MainActivity activity, ProgressDialog progressDialog) {
-            super(context, activity, progressDialog);
-        }
-
-        @Override
-        protected void onPreExecute() { /*Nothing*/ }
-
-        @Override
-        protected ParseResult parseResponse(String response) {
-            try {
-                JSONObject reader = new JSONObject(response);
-
-                final String code = reader.optString("cod");
-                if ("404".equals(code)) {
-                    Log.e("Geolocation", "No city found");
-                    return ParseResult.CITY_NOT_FOUND;
-                }
-
-//                saveLocation(reader.getString("id"));
-                final JSONArray cityList = reader.getJSONArray("list");
-
-                if (cityList.length() > 1) {
-                    launchLocationPickerDialog(cityList);
-                } else {
-                    saveLocation(cityList.getJSONObject(0).getString("id"));
-                }
-
-            } catch (JSONException e) {
-                Log.e("JSONException Data", response);
-                e.printStackTrace();
-                return ParseResult.JSON_EXCEPTION;
-            }
-
-            return ParseResult.OK;
-        }
-
-        @Override
-        protected String getAPIName() {
-            return "find";
-        }
-
-        @Override
-        protected void onPostExecute(TaskOutput output) {
-            /* Handle possible errors only */
-            handleTaskOutput(output);
-            refreshWeather();
-        }
-    }
+//    class FindCitiesByNameTask extends GenericRequestTask {
+//
+//        public FindCitiesByNameTask(Context context, MainActivity activity, ProgressDialog progressDialog) {
+//            super(context, activity, progressDialog);
+//        }
+//
+//        @Override
+//        protected void onPreExecute() { /*Nothing*/ }
+//
+//        @Override
+//        protected ParseResult parseResponse(String response) {
+//            try {
+//                JSONObject reader = new JSONObject(response);
+//
+//                final String code = reader.optString("cod");
+//                if ("404".equals(code)) {
+//                    Log.e("Geolocation", "No city found");
+//                    return ParseResult.CITY_NOT_FOUND;
+//                }
+//
+////                saveLocation(reader.getString("id"));
+//                final JSONArray cityList = reader.getJSONArray("list");
+//
+//                if (cityList.length() > 1) {
+//                    launchLocationPickerDialog(cityList);
+//                } else {
+//                    saveLocation(cityList.getJSONObject(0).getString("id"));
+//                }
+//
+//            } catch (JSONException e) {
+//                Log.e("JSONException Data", response);
+//                e.printStackTrace();
+//                return ParseResult.JSON_EXCEPTION;
+//            }
+//
+//            return ParseResult.OK;
+//        }
+//
+//        @Override
+//        protected String getAPIName() {
+//            return "find";
+//        }
+//
+//        @Override
+//        protected void onPostExecute(TaskOutput output) {
+//            /* Handle possible errors only */
+//            handleTaskOutput(output);
+//            refreshWeather();
+//        }
+//    }
 
     private void launchLocationPickerDialog(JSONArray cityList) {
         AmbiguousLocationDialogFragment fragment = new AmbiguousLocationDialogFragment();

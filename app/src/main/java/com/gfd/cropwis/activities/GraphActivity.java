@@ -6,6 +6,8 @@ import android.graphics.DashPathEffect;
 import android.graphics.Paint;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+
+import com.gfd.cropwis.models.Weather5Day;
 import com.google.android.material.snackbar.Snackbar;
 import androidx.appcompat.widget.Toolbar;
 import android.util.Log;
@@ -25,7 +27,6 @@ import java.util.ArrayList;
 import java.util.TimeZone;
 
 import com.gfd.cropwis.R;
-import com.gfd.cropwis.models.Weather;
 import com.gfd.cropwis.tasks.ParseResult;
 import com.gfd.cropwis.utils.UnitConvertor;
 
@@ -35,7 +36,7 @@ public class GraphActivity extends BaseActivity {
 
     int theme;
 
-    ArrayList<Weather> weatherList = new ArrayList<>();
+    ArrayList<Weather5Day> weather5DayList = new ArrayList<>();
 
     float minTemp = 100000;
     float maxTemp = 0;
@@ -104,8 +105,8 @@ public class GraphActivity extends BaseActivity {
 
         // Data
         LineSet dataset = new LineSet();
-        for (int i = 0; i < weatherList.size(); i++) {
-            float temperature = UnitConvertor.convertTemperature(Float.parseFloat(weatherList.get(i).getTemperature()), sp);
+        for (int i = 0; i < weather5DayList.size(); i++) {
+            float temperature = UnitConvertor.convertTemperature(Float.parseFloat(weather5DayList.get(i).getTemperature()), sp);
 
             if (temperature < minTemp) {
                 minTemp = temperature;
@@ -115,7 +116,7 @@ public class GraphActivity extends BaseActivity {
                 maxTemp = temperature;
             }
 
-            dataset.addPoint(getDateLabel(weatherList.get(i), i), temperature);
+            dataset.addPoint(getDateLabel(weather5DayList.get(i), i), temperature);
         }
         dataset.setSmooth(false);
         dataset.setColor(Color.parseColor("#FF5722"));
@@ -146,8 +147,8 @@ public class GraphActivity extends BaseActivity {
 
         // Data
         LineSet dataset = new LineSet();
-        for (int i = 0; i < weatherList.size(); i++) {
-            float rain = Float.parseFloat(weatherList.get(i).getRain());
+        for (int i = 0; i < weather5DayList.size(); i++) {
+            float rain = Float.parseFloat(weather5DayList.get(i).getRain());
 
             if (rain < minRain) {
                 minRain = rain;
@@ -157,7 +158,7 @@ public class GraphActivity extends BaseActivity {
                 maxRain = rain;
             }
 
-            dataset.addPoint(getDateLabel(weatherList.get(i), i), rain);
+            dataset.addPoint(getDateLabel(weather5DayList.get(i), i), rain);
         }
         dataset.setSmooth(false);
         dataset.setColor(Color.parseColor("#2196F3"));
@@ -188,8 +189,8 @@ public class GraphActivity extends BaseActivity {
 
         // Data
         LineSet dataset = new LineSet();
-        for (int i = 0; i < weatherList.size(); i++) {
-            float pressure = UnitConvertor.convertPressure(Float.parseFloat(weatherList.get(i).getPressure()), sp);
+        for (int i = 0; i < weather5DayList.size(); i++) {
+            float pressure = UnitConvertor.convertPressure(Float.parseFloat(weather5DayList.get(i).getPressure()), sp);
 
             if (pressure < minPressure) {
                 minPressure = pressure;
@@ -199,7 +200,7 @@ public class GraphActivity extends BaseActivity {
                 maxPressure = pressure;
             }
 
-            dataset.addPoint(getDateLabel(weatherList.get(i), i), pressure);
+            dataset.addPoint(getDateLabel(weather5DayList.get(i), i), pressure);
         }
         dataset.setSmooth(true);
         dataset.setColor(Color.parseColor("#4CAF50"));
@@ -235,8 +236,8 @@ public class GraphActivity extends BaseActivity {
 
         // Data
         LineSet dataset = new LineSet();
-        for (int i = 0; i < weatherList.size(); i++) {
-            float windSpeed = (float) UnitConvertor.convertWind(Float.parseFloat(weatherList.get(i).getWind()), sp);
+        for (int i = 0; i < weather5DayList.size(); i++) {
+            float windSpeed = (float) UnitConvertor.convertWind(Float.parseFloat(weather5DayList.get(i).getWind()), sp);
 
             if (windSpeed < minWindSpeed) {
                 minWindSpeed = windSpeed;
@@ -246,7 +247,7 @@ public class GraphActivity extends BaseActivity {
                 maxWindSpeed = windSpeed;
             }
 
-            dataset.addPoint(getDateLabel(weatherList.get(i), i), windSpeed);
+            dataset.addPoint(getDateLabel(weather5DayList.get(i), i), windSpeed);
         }
         dataset.setSmooth(false);
         dataset.setColor(Color.parseColor(graphLineColor));
@@ -285,29 +286,29 @@ public class GraphActivity extends BaseActivity {
 
             JSONArray list = reader.getJSONArray("list");
             for (i = 0; i < list.length(); i++) {
-                Weather weather = new Weather();
+                Weather5Day weather5Day = new Weather5Day();
 
                 JSONObject listItem = list.getJSONObject(i);
                 JSONObject main = listItem.getJSONObject("main");
 
                 JSONObject windObj = listItem.optJSONObject("wind");
-                weather.setWind(windObj.getString("speed"));
+                weather5Day.setWind(windObj.getString("speed"));
 
-                weather.setPressure(main.getString("pressure"));
-                weather.setHumidity(main.getString("humidity"));
+                weather5Day.setPressure(main.getString("pressure"));
+                weather5Day.setHumidity(main.getString("humidity"));
 
                 JSONObject rainObj = listItem.optJSONObject("rain");
                 JSONObject snowObj = listItem.optJSONObject("snow");
                 if (rainObj != null) {
-                    weather.setRain(MainActivity.getRainString(rainObj));
+                    weather5Day.setRain(MainActivity.getRainString(rainObj));
                 } else {
-                    weather.setRain(MainActivity.getRainString(snowObj));
+                    weather5Day.setRain(MainActivity.getRainString(snowObj));
                 }
 
-                weather.setDate(listItem.getString("dt"));
-                weather.setTemperature(main.getString("temp"));
+                weather5Day.setDate(listItem.getString("dt"));
+                weather5Day.setTemperature(main.getString("temp"));
 
-                weatherList.add(weather);
+                weather5DayList.add(weather5Day);
             }
         } catch (JSONException e) {
             Log.e("JSONException Data", result);
@@ -320,11 +321,11 @@ public class GraphActivity extends BaseActivity {
 
     String previous = "";
 
-    public String getDateLabel(Weather weather, int i) {
+    public String getDateLabel(Weather5Day weather5Day, int i) {
         if ((i + 4) % 4 == 0) {
             SimpleDateFormat resultFormat = new SimpleDateFormat("E");
             resultFormat.setTimeZone(TimeZone.getDefault());
-            String output = resultFormat.format(weather.getDate());
+            String output = resultFormat.format(weather5Day.getDate());
             if (!output.equals(previous)) {
                 previous = output;
                 return output;

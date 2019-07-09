@@ -24,6 +24,7 @@ public class WeekPickerDialog extends AlertDialog implements DialogInterface.OnC
     private String[] weekDisplayValues;
     private int selectYearIndex = 0;
     private int initSelectYear;
+    private int initSelectWeek;
     private List<Week> selectWeeks = new ArrayList<>();
     private Calendar currentCalendar;
     private static final String TAG = "WeekPickerDialog";
@@ -34,8 +35,9 @@ public class WeekPickerDialog extends AlertDialog implements DialogInterface.OnC
     }
 
     public WeekPickerDialog(Context context, Calendar calendar, OnWeekSelectListener listener) {
-        this(context, 0,calendar, listener);
+        this(context, 0,calendar, listener, -1, -1);
     }
+
 
     static int resolveDialogTheme(Context context, int resId) {
         if (resId == 0) {
@@ -47,11 +49,16 @@ public class WeekPickerDialog extends AlertDialog implements DialogInterface.OnC
         }
     }
 
-    public WeekPickerDialog(Context context, int themeResId, Calendar calendar, OnWeekSelectListener listener ) {
+    public WeekPickerDialog(Context context, int themeResId, Calendar calendar, OnWeekSelectListener listener, int selectYear, int selectWeek) {
         super(context, resolveDialogTheme(context, themeResId));
         yearDisplayValues = listToArray(initDisplayYears());
         this.currentCalendar = calendar;
-        initSelectYear = WeekHelper.getSelectYear(currentCalendar);
+        if (initSelectYear == -1) {
+            initSelectYear = WeekHelper.getSelectYear(currentCalendar);
+        } else {
+            this.initSelectYear = selectYear;
+            this.initSelectWeek = selectWeek;
+        }
         initData(initSelectYear);
         onWeekSelectListener = listener;
 
@@ -99,9 +106,16 @@ public class WeekPickerDialog extends AlertDialog implements DialogInterface.OnC
     private void setSelectWeekIndex(){
         for(int i = 0;i < selectWeeks.size(); i++){
             Week week = selectWeeks.get(i);
-            if(DateUtil.isEffectiveDate(currentCalendar.getTime(), week.getWeekBeginDate(), week.getWeekEndDate())){
-                selectWeekIndex = i;
-                break;
+            if (initSelectWeek == -1) {
+                if(DateUtil.isEffectiveDate(currentCalendar.getTime(), week.getWeekBeginDate(), week.getWeekEndDate())){
+                    selectWeekIndex = i;
+                    break;
+                }
+            } else {
+                if (week.getWeekNum().equals(String.valueOf(initSelectWeek))) {
+                    selectWeekIndex = i;
+                    break;
+                }
             }
         }
     }

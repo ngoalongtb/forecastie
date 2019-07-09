@@ -72,7 +72,7 @@ public class HotspotsAreaFragment extends Fragment implements View.OnClickListen
         mapping(view);
         tvDate.setText(String.format("[Week %s, %s]", selectedWeek, selectedYear));
 
-        getHotspotsArea();
+        getNewHostpot();
 
         // Inflate the layout for this fragment
         return view;
@@ -120,28 +120,72 @@ public class HotspotsAreaFragment extends Fragment implements View.OnClickListen
     }
 
     private void changeDate () {
-        new WeekPickerDialog(getActivity(), Calendar.getInstance(), new WeekPickerDialog.OnWeekSelectListener() {
+        new WeekPickerDialog(getActivity(), 0, Calendar.getInstance(), new WeekPickerDialog.OnWeekSelectListener() {
             @Override
             public void onWeekSelect(Week week) {
-                if(week == null){
-                    tvDate.setText("[No Selected]");
-                }else {
-                    tvDate.setText(String.format("[Week %s, %s]", week.getWeekNum(), week.getYear()));
-                    selectedWeek = Integer.parseInt(week.getWeekNum());
-                    selectedYear = week.getYear();
-                    getHotspotsArea();
+                if (week == null) {
+                    tvDate.setText(getText(R.string.no_selected));
+                } else {
+                    getHotspotsArea(week.getYear(), Integer.parseInt( week.getWeekNum()));
                 }
             }
-        }).show();
+        }, selectedYear, selectedWeek).show();
     }
-
-    private void getHotspotsArea() {
+    private void getNewHostpot() {
         progressDialog = new ProgressDialog(getActivity());
         progressDialog.setTitle(getText(R.string.sending_request));
         progressDialog.setMessage(getText(R.string.wait_please));
         progressDialog.show();
+        progressDialog.setCancelable(false);
 
-        String url = String.format(Constants.HOTSPOT_API, selectedYear, selectedWeek);
+        String url = Constants.NEW_HOTSPOT;
+        AndroidNetworking.get(url)
+                .setPriority(Priority.MEDIUM)
+                .build()
+                .getAsJSONObject(new JSONObjectRequestListener() {
+                    @Override
+                    public void onResponse(JSONObject response) {
+                        progressDialog.dismiss();
+                        try {
+                            hotspotsArea = new ArrayList<>();
+                            boolean rs = response.optBoolean("rs");
+                            JSONObject jsonObject = response.getJSONObject("ms");
+
+                            selectedWeek = jsonObject.optInt("week");
+                            selectedYear = jsonObject.optInt("year");
+                            tvDate.setText(String.format("[Week %s, %s]", selectedWeek, selectedYear));
+
+                            getHotspotsArea(selectedYear, selectedWeek);
+
+                        } catch (Exception e) {
+                            Log.e(AppConfig.LOG_KEY, e.getMessage());
+                            Toast.makeText(getActivity(), getText(R.string.an_error_occurred) + e.getMessage(), Toast.LENGTH_LONG).show();
+                            emptyResult();
+                        }
+                        Log.i(AppConfig.LOG_KEY, response.toString());
+                    }
+
+                    @Override
+                    public void onError(ANError anError) {
+                        progressDialog.dismiss();
+                        Log.e(AppConfig.LOG_KEY, anError.getErrorBody());
+                        Toast.makeText(getActivity(), getText(R.string.an_error_occurred) + anError.getErrorBody(), Toast.LENGTH_LONG).show();
+                        emptyResult();
+                    }
+                });
+    }
+    private void emptyResult() {
+        tvDate.setText(getText(R.string.no_selected));
+        Toast.makeText(getActivity(), "No Data", Toast.LENGTH_LONG).show();
+    }
+    private void getHotspotsArea(final int year, final int week) {
+        progressDialog = new ProgressDialog(getActivity());
+        progressDialog.setTitle(getText(R.string.sending_request));
+        progressDialog.setMessage(getText(R.string.wait_please));
+        progressDialog.show();
+        progressDialog.setCancelable(false);
+
+        String url = String.format(Constants.HOTSPOT_API, year, week);
         AndroidNetworking.get(url)
                 .setPriority(Priority.MEDIUM)
                 .build()
@@ -170,6 +214,9 @@ public class HotspotsAreaFragment extends Fragment implements View.OnClickListen
                             });
 
                             displayData();
+                            selectedYear = year;
+                            selectedWeek = week;
+                            tvDate.setText(String.format("[Week %s, %s]", selectedWeek, selectedYear));
 
                         } catch (Exception e) {
                             Log.e(AppConfig.LOG_KEY, e.getMessage());
