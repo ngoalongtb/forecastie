@@ -27,7 +27,7 @@ public class CropGrowingSeasonActivity extends BaseActivity {
     private void setupToolbar() {
         // Load toolbar
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        toolbar.setTitle(R.string.hotspots_area);
+        toolbar.setTitle(R.string.crop_growing_sesson);
         setSupportActionBar(toolbar);
         if (darkTheme) {
             toolbar.setPopupTheme(R.style.AppTheme_PopupOverlay_Dark);

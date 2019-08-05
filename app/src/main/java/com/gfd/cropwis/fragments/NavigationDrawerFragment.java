@@ -19,12 +19,7 @@ import com.gfd.cropwis.activities.MainActivity;
 import com.gfd.cropwis.activities.SettingsActivity;
 
 /**
- * A simple {@link Fragment} subclass.
- * Activities that contain this fragment must implement the
- * {@link NavigationDrawerFragment.OnFragmentInteractionListener} interface
- * to handle interaction events.
- * Use the {@link NavigationDrawerFragment#newInstance} factory method to
- * create an instance of this fragment.
+ * @author luantm
  */
 public class NavigationDrawerFragment extends Fragment implements View.OnClickListener {
     private ActionBarDrawerToggle   mDrawerToggle;
