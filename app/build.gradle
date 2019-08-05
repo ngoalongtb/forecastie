@@ -49,4 +49,5 @@ dependencies {
     implementation 'com.github.dewinjm:monthyear-picker:1.0.1'
     implementation 'com.amitshekhar.android:android-networking:1.0.2'
     implementation 'com.amitshekhar.android:jackson-android-networking:1.0.2'
+    implementation 'com.google.android.gms:play-services-maps:17.0.0'
 }

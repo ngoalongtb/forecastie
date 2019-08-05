@@ -13,6 +13,7 @@ import android.widget.LinearLayout;
 
 import com.gfd.cropwis.R;
 import com.gfd.cropwis.about.AboutActivity;
+import com.gfd.cropwis.cropgrowingseason.CropGrowingSeasonActivity;
 import com.gfd.cropwis.hotspotsarea.HotspotsAreaActivity;
 import com.gfd.cropwis.activities.MainActivity;
 import com.gfd.cropwis.activities.SettingsActivity;
@@ -133,6 +134,8 @@ public class NavigationDrawerFragment extends Fragment implements View.OnClickLi
                 startActivity(intent);
                 break;
             case R.id.menuCropGrowingSesson:
+                intent = new Intent(this.getActivity(), CropGrowingSeasonActivity.class);
+                startActivity(intent);
                 break;
             case R.id.menuSettings:
                 intent = new Intent(this.getActivity(), SettingsActivity.class);

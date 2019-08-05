@@ -1,18 +1,16 @@
 package com.gfd.cropwis.cropgrowingseason;
 
-import androidx.appcompat.app.AppCompatActivity;
+import android.os.Bundle;
+
 import androidx.appcompat.widget.Toolbar;
 import androidx.drawerlayout.widget.DrawerLayout;
-
-import android.os.Bundle;
 
 import com.gfd.cropwis.R;
 import com.gfd.cropwis.activities.BaseActivity;
 import com.gfd.cropwis.fragments.NavigationDrawerFragment;
-import com.gfd.cropwis.hotspotsarea.HotspotsAreaFragment;
 import com.gfd.cropwis.utils.ActivityUtils;
 
-public class CropGrowingSeason extends BaseActivity {
+public class CropGrowingSeasonActivity extends BaseActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,11 +37,11 @@ public class CropGrowingSeason extends BaseActivity {
     }
 
     private void setupFragment() {
-        HotspotsAreaFragment fragment =
-                (HotspotsAreaFragment) getSupportFragmentManager().findFragmentById(R.id.contentFrame);
+        CropGrowingSeasonFragment fragment =
+                (CropGrowingSeasonFragment) getSupportFragmentManager().findFragmentById(R.id.contentFrame);
         if (fragment == null) {
             // Create the fragment
-            fragment = HotspotsAreaFragment.newInstance();
+            fragment = CropGrowingSeasonFragment.newInstance();
             ActivityUtils.addFragmentToActivity(
                     getSupportFragmentManager(), fragment, R.id.contentFrame);
         }
