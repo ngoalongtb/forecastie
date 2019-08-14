@@ -22,7 +22,6 @@ import com.androidnetworking.interfaces.JSONObjectRequestListener;
 import com.gfd.cropwis.Constants;
 import com.gfd.cropwis.R;
 import com.gfd.cropwis.configs.AppConfig;
-import com.gfd.cropwis.models.Hotspot;
 import com.gfd.cropwis.weekpicker.Week;
 import com.gfd.cropwis.weekpicker.WeekPickerDialog;
 import com.unnamed.b.atv.model.TreeNode;
@@ -87,24 +86,42 @@ public class HotspotsAreaFragment extends Fragment implements View.OnClickListen
     }
 
     private void displayData() {
-
+        String oldLevel1 = "";
         String oldLevel2 = "";
         TreeNode root = TreeNode.root();
-        TreeNode parent = null;
+        TreeNode parent2 = null;
+        TreeNode parent1 = null;
+
         for (HotspotArea hotspotArea:
              hotspotsArea) {
-            if (hotspotArea.getLevel2().equals(oldLevel2)) {
-                TreeNode child = new TreeNode(hotspotArea).setViewHolder(new HotspotsAreaSubHolder(getActivity()));
-                if (parent != null) {
-                    parent.addChild(child);
+            if (hotspotArea.getLevel1().equals(oldLevel1)) {
+                if (hotspotArea.getLevel2().equals(oldLevel2)) {
+                    TreeNode child = new TreeNode(hotspotArea).setViewHolder(new HotspotsAreaLevel3Holder(getActivity()));
+                    if (parent2 != null) {
+                        parent2.addChild(child);
+                    }
+                } else {
+                    parent2 = new TreeNode(hotspotArea).setViewHolder(new HotspotsAreaLevel2Holder(getActivity()));
+                    TreeNode child = new TreeNode(hotspotArea).setViewHolder(new HotspotsAreaLevel3Holder(getActivity()));
+                    parent2.addChild(child);
+                    parent1.addChild(parent2);
+                    oldLevel2 = hotspotArea.getLevel2();
                 }
             } else {
-                parent = new TreeNode(hotspotArea).setViewHolder(new HotspotsAreaHolder(getActivity()));
-                TreeNode child = new TreeNode(hotspotArea).setViewHolder(new HotspotsAreaSubHolder(getActivity()));
-                parent.addChild(child);
-                root.addChild(parent);
+                parent1 = new TreeNode(hotspotArea).setViewHolder(new HotspotsAreaLevel1Holder(getActivity()));
+                root.addChild(parent1);
+
+                parent2 = new TreeNode(hotspotArea).setViewHolder(new HotspotsAreaLevel2Holder(getActivity()));
+                parent1.addChild(parent2);
+
+                TreeNode child = new TreeNode(hotspotArea).setViewHolder(new HotspotsAreaLevel3Holder(getActivity()));
+                parent2.addChild(child);
+
+                oldLevel1 = hotspotArea.getLevel1();
                 oldLevel2 = hotspotArea.getLevel2();
             }
+
+
         }
 
         AndroidTreeView treeView = new AndroidTreeView(getActivity(), root);
@@ -205,10 +222,14 @@ public class HotspotsAreaFragment extends Fragment implements View.OnClickListen
                             Collections.sort(hotspotsArea, new Comparator<HotspotArea>() {
                                 @Override
                                 public int compare(HotspotArea o1, HotspotArea o2) {
-                                    if (o1.getLevel2().equals(o2.getLevel2())) {
-                                        return o1.getLevel3().compareTo(o2.getLevel3());
+                                    if (o1.getLevel1().equals(o2.getLevel1())) {
+                                        if (o1.getLevel2().equals(o2.getLevel2())) {
+                                            return o1.getLevel3().compareTo(o2.getLevel3());
+                                        } else {
+                                            return o1.getLevel2().compareTo(o2.getLevel2());
+                                        }
                                     } else {
-                                        return o1.getLevel2().compareTo(o2.getLevel2());
+                                        return o1.getLevel1().compareTo(o2.getLevel1());
                                     }
                                 }
                             });

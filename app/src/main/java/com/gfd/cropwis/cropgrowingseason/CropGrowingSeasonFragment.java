@@ -234,7 +234,7 @@ public class CropGrowingSeasonFragment extends Fragment implements View.OnClickL
                 View locationButton = ((View) mMapFragment.getView().findViewById(Integer.parseInt("1")).getParent()).findViewById(Integer.parseInt("2"));
                 RelativeLayout.LayoutParams rlp = (RelativeLayout.LayoutParams) locationButton.getLayoutParams();
                 rlp.addRule(RelativeLayout.ALIGN_PARENT_TOP, RelativeLayout.TRUE);
-                rlp.setMargins(0, 200, 30, 0);
+                rlp.setMargins(0, 160, 30, 0);
                 mMap.getUiSettings().setMapToolbarEnabled(true);
                 mMap.setMyLocationEnabled(true);
             } else {
