@@ -173,4 +173,17 @@
     <string name="date">Date</string>
     <string name="sub_country">Sub Country</string>
     <string name="no_info">No Information</string>
+    <string name="search_hint">Search location...</string>
+    <string name="enter_search_location_pls">Search Location is empty</string>
+    <string name="fake_address">Fake Address</string>
+    <string name="start_date">Start Date</string>
+    <string name="end_date">End Date</string>
+    <string name="length">Length</string>
+    <string name="crop_season_1">Crop Season 1</string>
+    <string name="crop_season_2">Crop Season 2</string>
+    <string name="location_hint">Parish, Village, District, SubCountry</string>
+    <string name="season_layers">Season Layers</string>
+    <string name="season_2">Season 2</string>
+    <string name="season_1">Season 1</string>
+    <string name="no_layer">No Layer</string>
 </resources>

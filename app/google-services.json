@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "761264960389",
+    "firebase_url": "https://cropwis-81aa0.firebaseio.com",
+    "project_id": "cropwis-81aa0",
+    "storage_bucket": "cropwis-81aa0.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:761264960389:android:2bc3e5881f2030a2564aec",
+        "android_client_info": {
+          "package_name": "com.gfd.cropwis"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "761264960389-01532ccgl9326eltveiff6pbs85sld51.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAysZ62yJmBdrLIbeFNoIhFGc8rfDuROtk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "761264960389-01532ccgl9326eltveiff6pbs85sld51.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

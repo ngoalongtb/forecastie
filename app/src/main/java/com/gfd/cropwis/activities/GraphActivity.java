@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.preference.PreferenceManager;
 
 import com.gfd.cropwis.models.Weather5Day;
+import com.gfd.cropwis.utils.Formatting;
 import com.google.android.material.snackbar.Snackbar;
 import androidx.appcompat.widget.Toolbar;
 import android.util.Log;
@@ -24,6 +25,7 @@ import org.json.JSONObject;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.TimeZone;
 
 import com.gfd.cropwis.R;
@@ -89,8 +91,9 @@ public class GraphActivity extends BaseActivity {
 
         sp = PreferenceManager.getDefaultSharedPreferences(GraphActivity.this);
         String lastLongterm = sp.getString("lastLongterm", "");
+        String lastLongterm16Days = sp.getString("lastLongterm16Days", "");
 
-        if (parseLongTermJson(lastLongterm) == ParseResult.OK) {
+        if (parseLongTerm16DaysJson(lastLongterm16Days) == ParseResult.OK) {
             temperatureGraph();
             rainGraph();
             pressureGraph();
@@ -310,6 +313,67 @@ public class GraphActivity extends BaseActivity {
 
                 weather5DayList.add(weather5Day);
             }
+        } catch (JSONException e) {
+            Log.e("JSONException Data", result);
+            e.printStackTrace();
+            return ParseResult.JSON_EXCEPTION;
+        }
+
+        return ParseResult.OK;
+    }
+
+    public ParseResult parseLongTerm16DaysJson(String result) {
+        int i;
+        try {
+            JSONObject reader = new JSONObject(result);
+
+            final String code = reader.optString("cod");
+            if ("404".equals(code)) {
+                if (weather5DayList == null) {
+                    weather5DayList = new ArrayList<>();
+                }
+                return ParseResult.CITY_NOT_FOUND;
+            }
+
+            weather5DayList = new ArrayList<>();
+
+            JSONArray list = reader.getJSONArray("list");
+            for (i = 0; i < list.length(); i++) {
+                Weather5Day weather = new Weather5Day();
+
+                JSONObject listItem = list.getJSONObject(i);
+
+                weather.setDate(listItem.getString("dt"));
+
+                float kelvinTemp = UnitConvertor.celsiusToKelvin(Float.parseFloat(listItem.getJSONObject("temp").getString("day")));
+                weather.setTemperature(String.valueOf(kelvinTemp));
+                weather.setDescription(listItem.optJSONArray("weather").getJSONObject(0).getString("description"));
+                weather.setWind(listItem.getString("speed"));
+                weather.setWindDirectionDegree(listItem.optDouble("deg"));
+
+                weather.setPressure(listItem.getString("pressure"));
+                weather.setHumidity(listItem.getString("humidity"));
+                if (listItem.has("rain")) {
+                    weather.setRain(listItem.getString("rain"));
+                } else {
+                    weather.setRain("0");
+                }
+
+
+                final String idString = listItem.optJSONArray("weather").getJSONObject(0).getString("id");
+                weather.setId(idString);
+
+                final String dateMsString = listItem.getString("dt") + "000";
+                Calendar cal = Calendar.getInstance();
+                cal.setTimeInMillis(Long.parseLong(dateMsString));
+                Formatting formatting = new Formatting(GraphActivity.this);
+                weather.setIcon(formatting.setWeatherIcon(Integer.parseInt(idString), cal.get(Calendar.HOUR_OF_DAY)));
+
+                weather5DayList.add(weather);
+            }
+            SharedPreferences.Editor editor = PreferenceManager.getDefaultSharedPreferences(GraphActivity.this).edit();
+            editor.putString("lastLongterm16Days", result);
+            editor.commit();
         } catch (JSONException e) {
             Log.e("JSONException Data", result);
             e.printStackTrace();

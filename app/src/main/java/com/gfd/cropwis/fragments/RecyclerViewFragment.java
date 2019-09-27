@@ -31,5 +31,4 @@ public class RecyclerViewFragment extends Fragment {
         recyclerView.setAdapter(mainActivity.getAdapter(bundle.getInt("day")));
         return view;
     }
-
 }

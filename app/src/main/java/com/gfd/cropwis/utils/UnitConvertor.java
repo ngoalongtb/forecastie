@@ -19,6 +19,10 @@ public class UnitConvertor {
         return kelvinTemp - 273.15f;
     }
 
+    public static float celsiusToKelvin(float celsiusTemp) {
+        return celsiusTemp + 273.15f;
+    }
+
     public static float kelvinToFahrenheit(float kelvinTemp) {
         return (((9 * kelvinToCelsius(kelvinTemp)) / 5) + 32);
     }

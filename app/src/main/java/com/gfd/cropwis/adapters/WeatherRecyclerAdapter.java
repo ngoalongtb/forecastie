@@ -46,11 +46,8 @@ public class WeatherRecyclerAdapter extends RecyclerView.Adapter<WeatherViewHold
         SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(context);
         float temperature = 0;
         // Temperature
-        if (weather5DayItem.getUvIndex() == 0) {
-            temperature = Float.parseFloat(weather5DayItem.getTemperature());
-        } else {
-            temperature = UnitConvertor.convertTemperature(Float.parseFloat(weather5DayItem.getTemperature()), sp);
-        }
+
+        temperature = UnitConvertor.convertTemperature(Float.parseFloat(weather5DayItem.getTemperature()), sp);
 
         if (sp.getBoolean("temperatureInteger", false)) {
             temperature = Math.round(temperature);

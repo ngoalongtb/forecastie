@@ -1,7 +1,12 @@
 package com.gfd.cropwis.activities;
 
 import android.Manifest;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
 import android.app.ProgressDialog;
+import android.app.job.JobInfo;
+import android.app.job.JobScheduler;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -14,11 +19,15 @@ import android.location.LocationManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.provider.Settings;
 
+import com.gfd.cropwis.configs.AppConstant;
 import com.gfd.cropwis.models.Weather5Day;
+import com.gfd.cropwis.service.NewHotspotJobService;
+import com.gfd.cropwis.service.TestNewHotspotJobService;
 import com.google.android.material.appbar.AppBarLayout;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.tabs.TabLayout;
@@ -205,6 +214,57 @@ public class MainActivity extends BaseActivity implements LocationListener {
         }
 
         SetupDrawer();
+
+        registerNotification();
+
+    }
+
+    private void testService() {
+        Intent serviceIntent = new Intent(this, TestNewHotspotJobService.class);
+        TestNewHotspotJobService.enqueueWork(this, serviceIntent);
+    }
+
+    private void checkAndRegisterNewHotSpotJobService() {
+        SharedPreferences preferences = PreferenceManager.
+                getDefaultSharedPreferences(this);
+
+//        if(!preferences.getBoolean("firstRun1", false)){
+            //schedule the job only once.
+            registerNewHotSpotJobService();
+
+//            //update shared preference
+//            SharedPreferences.Editor editor = preferences.edit();
+//            editor.putBoolean("firstRun1", true);
+//            editor.commit();
+//        }
+    }
+
+    private void registerNewHotSpotJobService() {
+        JobScheduler jobScheduler = (JobScheduler)getApplicationContext()
+                .getSystemService(JOB_SCHEDULER_SERVICE);
+
+        ComponentName componentName = new ComponentName(this,
+                NewHotspotJobService.class);
+
+        JobInfo jobInfo = new JobInfo.Builder(1, componentName)
+                .setPeriodic(6000)
+                .setRequiredNetworkType(JobInfo.NETWORK_TYPE_ANY)
+                .setMinimumLatency(0)
+//                .setRequiredNetworkType(
+//                        JobInfo.NETWORK_TYPE_NOT_ROAMING)
+                .setPersisted(true).build();
+        int schedule = jobScheduler.schedule(jobInfo);
+
+
+    }
+
+
+    private void registerNotification() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            NotificationChannel channel = new NotificationChannel(AppConstant.CHANEL_ID, AppConstant.CHANEL_ID, NotificationManager.IMPORTANCE_DEFAULT);
+            NotificationManager manager = getSystemService(NotificationManager.class);
+            manager.createNotificationChannel(channel);
+        }
     }
 
     private void SetupDrawer() {
@@ -496,12 +556,15 @@ public class MainActivity extends BaseActivity implements LocationListener {
         getSupportActionBar().setTitle(city + (country.isEmpty() ? "" : ", " + country));
 
         SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(MainActivity.this);
-
+        float temperature = 0;
         // Temperature
-        float temperature = UnitConvertor.convertTemperature(Float.parseFloat(todayWeather5Day.getTemperature()), sp);
-        if (sp.getBoolean("temperatureInteger", false)) {
-            temperature = Math.round(temperature);
+        if (todayWeather5Day.getTemperature() != null) {
+            temperature = UnitConvertor.convertTemperature(Float.parseFloat(todayWeather5Day.getTemperature()), sp);
+            if (sp.getBoolean("temperatureInteger", false)) {
+                temperature = Math.round(temperature);
+            }
         }
+
 
         // Rain
         double rain = Double.parseDouble(todayWeather5Day.getRain());
@@ -676,7 +739,9 @@ public class MainActivity extends BaseActivity implements LocationListener {
                 JSONObject listItem = list.getJSONObject(i);
 
                 weather.setDate(listItem.getString("dt"));
-                weather.setTemperature(listItem.getJSONObject("temp").getString("day"));
+
+                float kelvinTemp = UnitConvertor.celsiusToKelvin(Float.parseFloat(listItem.getJSONObject("temp").getString("day")));
+                weather.setTemperature(String.valueOf(kelvinTemp));
                 weather.setDescription(listItem.optJSONArray("weather").getJSONObject(0).getString("description"));
                 weather.setWind(listItem.getString("speed"));
                 weather.setWindDirectionDegree(listItem.optDouble("deg"));

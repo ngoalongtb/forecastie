@@ -1,4 +1,5 @@
 apply plugin: 'com.android.application'
+apply plugin: 'com.google.gms.google-services'
 
 def supportLibVersion = '1.0.0-beta01'
 def lifecycleVersion = '2.0.0-beta01'
@@ -10,8 +11,8 @@ android {
         minSdkVersion 23
         //noinspection ExpiringTargetSdkVersion
         targetSdkVersion 28
-        versionCode 5
-        versionName "0.2.0"
+        versionCode 7
+        versionName "0.3.0"
     }
 
     lintOptions {
@@ -29,7 +30,7 @@ android {
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
-    implementation 'androidx.appcompat:appcompat:1.0.2'
+    implementation 'androidx.appcompat:appcompat:1.1.0'
     testImplementation 'junit:junit:4.12'
     //noinspection GradleDependency
     implementation "androidx.appcompat:appcompat:$supportLibVersion"
@@ -50,4 +51,6 @@ dependencies {
     implementation 'com.amitshekhar.android:android-networking:1.0.2'
     implementation 'com.amitshekhar.android:jackson-android-networking:1.0.2'
     implementation 'com.google.android.gms:play-services-maps:17.0.0'
+    implementation 'com.google.firebase:firebase-core:17.2.0'
+    implementation 'com.google.firebase:firebase-messaging:20.0.0'
 }
