@@ -36,6 +36,23 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="16dp"/>
+
+            <TextView
+                android:text="@string/teamleader_about"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"/>
+            <TextView
+                android:text="@string/phone_about"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"/>
+            <TextView
+                android:text="@string/email_about"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"/>
+
         </LinearLayout>
         <LinearLayout
             android:layout_below="@+id/top"

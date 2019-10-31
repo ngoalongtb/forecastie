@@ -186,4 +186,7 @@
     <string name="season_2">Season 2</string>
     <string name="season_1">Season 1</string>
     <string name="no_layer">No Layer</string>
+    <string name="teamleader_about">\t\t\t\tTeam leader: Dr. John Wasige, College of Agricultural &amp; Environmental Sciences, Makererere University, Uganda</string>
+    <string name="phone_about">\t\t\t\tPhone: +256772324005</string>
+    <string name="email_about">\t\t\t\tEmail: johnwasige@gmail.com</string>
 </resources>
