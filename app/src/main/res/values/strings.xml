@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">CropWIS</string>
+    <string name="app_name">CropWISE</string>
     <string name="google_maps_key" translatable="false">AIzaSyCdk9t55d2vDb5Mh9TB915GfZWaI3SOVW0</string>
     <string name="action_search">Search</string>
     <string name="action_refresh">Refresh</string>
@@ -23,10 +23,10 @@
 
     <string name="search_title">Search for city</string>
 
-    <string name="downloading_data">Downloading your data ...</string>
-    <string name="getting_location">Getting your location ...</string>
+    <string name="downloading_data">Downloading your data …</string>
+    <string name="getting_location">Getting your location …</string>
 
-    <string name="loading_data">Loading...</string>
+    <string name="loading_data">Loading…</string>
 
     <string name="error_dateFormat">DATE FORMAT ERROR</string>
 
@@ -140,7 +140,7 @@
     <string name="rain">Rain</string>
     <string name="temperature">Temperature</string>
     <string name="action_graphs">Graphs</string>
-    <string name="about_dialog">Uganda Crop Infomation System</string>
+    <string name="about_dialog">Uganda Crop Information System</string>
 
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
@@ -154,7 +154,7 @@
     <string name="hotspot_value_hint">-49</string>
     <string name="hotspot_name3_hint">Rukungiri Tc</string>
     <string name="date_hint">[ Jan, 2018 ]</string>
-    <string name="about_1">\t\t\t\tCropWIS is a cross platform geo-web and mobile phone application with current location based functionality/ geographical position system (GPS) for broadcasting daily weather5Day and crop early warning predictions and alerts to farm communities and policymakers using the latest state of the art ICT platform for hosting and delivering digital data. The project is supported by USAID through the US-NFS and implemented by Makerere University and University of Zambia.</string>
+    <string name="about_1">\t\t\t\tCropWISE is a cross platform geo-web and mobile phone application with current location based functionality/ geographical position system (GPS) for broadcasting daily weather5Day and crop early warning predictions and alerts to farm communities and policymakers using the latest state of the art ICT platform for hosting and delivering digital data. The project is supported by USAID through the US-NFS and implemented by Makerere University and University of Zambia.</string>
     <string name="about_preferences">About</string>
     <string name="ok">OK</string>
     <string name="cancel">Cancel</string>
@@ -173,7 +173,7 @@
     <string name="date">Date</string>
     <string name="sub_country">Sub Country</string>
     <string name="no_info">No Information</string>
-    <string name="search_hint">Search location...</string>
+    <string name="search_hint">Search location…</string>
     <string name="enter_search_location_pls">Search Location is empty</string>
     <string name="fake_address">Fake Address</string>
     <string name="start_date">Start Date</string>
